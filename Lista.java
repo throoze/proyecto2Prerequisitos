@@ -1,3 +1,5 @@
+import java.util.Iterator;
+
 /**
  * Representa el objeto Lista(E), una lista de elementos del tipo E. implementa
  * la interfaz List(E).
@@ -348,6 +350,10 @@ public class Lista<E> implements List<E>{
             s += ((E)lista[k]).toString() + "\n";
         }
         return s;
+    }
+
+    public Iterator iterator() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     /**

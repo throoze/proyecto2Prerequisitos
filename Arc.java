@@ -61,6 +61,23 @@ public class Arc {
     }
 
     /**
+     * Crea un arco entre los nodos {@code src} y {@code dst} con el
+     * identificador {@code ident}
+     * pre: true, aunque en el programa llamador, probablemente tanto
+     * {@code src} como {@code dst} deban pertenecer al Digrafo en uso.
+     * post: este arco ira desde el nodo {@code src} hasta el nodo {@code dst} y
+     * su identificador sera {@code ident}
+     * @param src nodo origen del arco
+     * @param dst nodo destino del arco
+     * @param ident identificador del arco
+     */
+    public Arc(int src, int dst, String ident) {
+       this.src = src;
+       this.dst = dst;
+       this.id = ident;
+    }
+
+    /**
      * Crea un arco entre los nodos {@code src} y {@code dst} con el costo
      * {@code cost}
      * pre: true, aunque en el programa llamador, probablemente tanto
@@ -106,7 +123,8 @@ public class Arc {
     public boolean equals(Object a) {
        if (a instanceof Arc) {
            Arc nuevo = (Arc) a;
-           return (this.dst == nuevo.dst && this.src == nuevo.src);
+           return (this.dst == nuevo.dst &&
+                   this.src == nuevo.src);
        } else {
            return false;
        }
@@ -179,7 +197,7 @@ public class Arc {
     public boolean isEmpty() {
         return ((this.cost == -1.0 &&
                  this.dst == -1 &&
-                 this.id == null &&
+                 this.id.equals("") &&
                  this.src == -1) ||
                  this == null);
     }

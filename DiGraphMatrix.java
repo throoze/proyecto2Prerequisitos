@@ -6,55 +6,54 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 /**
- * DiGraphList es una clase concreta que representa un digrafo utilizando la
- * estructura Lista.
- * Los arcos son almacenados como una lista y son almacenados en un
- * arreglo donde la posicion i representa el nodo en el que inciden.
+ * DiGraphMatrix es una clase concreta que representa un digrafo usando la
+ * estructura de la matriz de adyacencias.
  *
  * @author Les profs
  * @author Victor De Ponte, 05-38087
  * @author Karina Valera, 06-40414
  * @version 2.0
  * @since 1.6
- */
-public class DiGraphList extends DiGraph {
+**/
+public class DiGraphMatrix extends DiGraph {
 
     // Modelo de representación:
-    // arreglo de lista de los arcos, inArc[i] contine la lista
-    // de los arcos que cuyo destino es el nodo i
-    private List<Arc> inArcs[];
-    // arreglo de lista de los arcos, outArc[i] contine la lista
-    // de los arcos que cuyo fuente es el nodo i
-    private List<Arc> outArcs[];
-
+    // estructura de la matriz de adyacencias que se debe utilizar
+    private boolean matrix[][];
+    
     // Constructores:
 
-    public DiGraphList() {
-        this.inArcs = null;
-        this.outArcs = null;
+    /**
+     * Crea un DiGraphMatrix vacio.
+     * <b>Pre</b>: {@code true;}
+     * <b>Post</b>: este DiGraphMatrix está vacio.
+     */
+    public DiGraphMatrix() {
+        this.matrix = null;
         this.numArcs = 0;
         this.numNodes = 0;
     }
-
+    
     /**
-     * Crea un DiGraphList con n nodos y sin arcos.
+     * Crea un DiGraphMatrix con n nodos y sin arcos
      * <b>Pre</b>: {@code n} &lt; {@code 0}
-     * <b>Post</b>: este DiGraphList tiene {@code n} nodos y ningún arco.
-     * @param n el número de nodos con los que se inicializa este DiGraphList.
+     * <b>Post</b>: este DiGraphMatrix tiene {@code n} nodos y ningún arco.
+     * @param n el número de nodos con los que se inicializa este
+     * DiGraphMatrix.
      */
-    public DiGraphList(int n) {
-        this.inArcs = new List[n];
-        this.outArcs = new List[n];
+    public DiGraphMatrix(int n) {
+        this();
+        matrix = new boolean[n][n];
         for (int i = 0; i < n; i++) {
-            this.inArcs[i] = new Lista();
-            this.outArcs[i] = new Lista();
+            for (int j =0; j < n; j++) {
+                this.matrix[i][j] = false;
+            }
         }
-        this.numNodes = n;
-        this.numArcs = 0;
+        numNodes = n;
     }
-
+    
     /**
-     * Crea un DiGraphList a partir del contenido del archivo.
+     * Crea un DiGraphMatrix a partir del contenido del archivo.
      * <blockquote>
      * <p><b>Sintaxis</b>:</p>
      * <p>numNodos numArcos</p>
@@ -69,39 +68,35 @@ public class DiGraphList extends DiGraph {
      * <b>Pre</b>: {@code fileName} debe existir, ser un archivo, poder leerse,
      * no puede tener errores de formato ni inconsistencias en el número de
      * nodos o arcos.
-     * <b>Post</b>: Este DiGraphList se inicializa exitosamente con el DiGraph
-     * representado en el archivo {@code fileName}.
+     * <b>Post</b>: Este DiGraphMatrix se inicializa exitosamente con el
+     * DiGraph representado en el archivo {@code fileName}.
      * @param fileName Nombre del archivo a leer
      * @throws IOException En caso de que {@code fileName} no exista, no sea un
      * archivo, no se pueda leer, tenga un error de formato, o alguna
      * inconsistencia en cuanto al numero de arcos o el numero de nodos
      */
-    public DiGraphList(String fileName) throws IOException {
-        this();
+    public DiGraphMatrix(String fileName) throws IOException {
+        this(0);
         this.read(fileName);
     }
-
-   /**
-     * Crea un DiGraphList a partir del DiGraph g
+    
+    /**
+     * Crea un DiGraphMatrix a partir del DiGraph g
      * <b>Pre</b>: {@code true;}
      * <b>Post</b>: {@code this.equals(g)}
-     *
+     * 
      * @param g el grafo fuente.
      */
-    public DiGraphList(DiGraph g) {
-        this();
-        this.inArcs = new List[g.numNodes];
-        this.outArcs = new List[g.numNodes];
-        for (int i = 0; i < g.numNodes; i++) {
-            this.inArcs[i] = new Lista();
-            this.outArcs[i] = new Lista();
-        }
+    public DiGraphMatrix(DiGraph g) {
         this.numNodes = g.numNodes;
         this.numArcs = 0;
-        for (int i = 0; i < this.numNodes; i++) {
-            for  (int j = 0; j < this.numNodes; j++) {
-                if (g.isArc(i, j)) {
-                    this.addArc(i, j);
+        this.matrix = new boolean [g.numNodes][g.numNodes];
+        for (int i = 0; i < g.numNodes; i++) {
+            for (int j=0; j< g.numNodes; j++){
+                if (g.isArc(i, j)){
+                    this.addArc(i,j);
+                } else {
+                    this.matrix[i][j] = false;
                 }
             }
         }
@@ -123,41 +118,10 @@ public class DiGraphList extends DiGraph {
         int dst = arco.getDst();
         if ((0 <= src && src < this.numNodes) &&
             (0 <= dst && dst < this.numNodes)) {
-            if (!this.isArc(arco)) {
-                this.inArcs[dst].add(arco);
-                this.outArcs[src].add(arco);
+            if (!this.isArc(src, dst)) {
+                this.matrix[src][dst] = true;
                 this.numArcs++;
-                return (arco);
-            } else {
-                return null;
-            }
-        } else {
-            return null;
-        }
-    }
-
-   /**
-     * Agrega un arco a este DiGraphList.
-     * <b>Pre</b>: Los nodos src y dst deben encontrase en el DigraphList y no
-     * debe existir un arco entre ellos.
-     * <b>Post</b>: El DigraphList contendra un nuevo arco que tendra a src y
-     * dst como nodos fuente y destino respectivamente.
-     *
-     * @param src nodo fuente del arco
-     * @param dst nodo destino del arco
-     * @return El arco agregado y null en caso de que los nodos src y dst no se
-     * encuentren en el DiGraphList.
-     *
-     */
-    public Arc addArc(int src, int dst) {
-        if ((0 <= src && src < this.numNodes) &&
-            (0 <= dst && dst < this.numNodes)) {
-            if (!(this.isArc(src, dst))) {
-                Arc nuevo = new Arc(src, dst);
-                this.inArcs[dst].add(nuevo);
-                this.outArcs[src].add(nuevo);
-                this.numArcs++;
-                return (nuevo);
+                return arco;
             } else {
                 return null;
             }
@@ -167,28 +131,57 @@ public class DiGraphList extends DiGraph {
     }
 
     /**
-     * Agrega un arco a este DiGraphList
-     * <b>Pre</b>: Los nodos src y dst deben encontrase en el DigraphList y no
-     * debe existir un arco entre ellos.
-     * <b>Post</b>: El DigraphList contendra un nuevo arco que tendra a src y
-     * dst como nodos fuente y destino respectivamente y el costo {@code costo}.
+     * Agrega un arco a este DiGraphMatrix
+     * <b>Pre</b>: Los nodos src y dst deben encontrase en el DiGraphMatrix
+     * y no debe existir un arco entre ellos.
+     * <b>Post</b>: El DiGraphMatrix contendra un nuevo arco que tendra a
+     * src y dst como nodos fuente y destino respectivamente.
+     *
+     * @param src nodo fuente del arco
+     * @param dst nodo destino del arco
+     * @return El arco agregado y null en caso de que los nodos src y dst no se
+     * encuentren en el DiGraphMatrix
+     *
+     */
+    public Arc addArc(int src, int dst) {
+        if ((0 <= src && src < this.numNodes) &&
+            (0 <= dst && dst < this.numNodes)) {
+            if (!this.isArc(src, dst)) {
+                this.matrix[src][dst] = true;
+                this.numArcs++;
+                Arc arco = new Arc(src, dst);
+                return arco;
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Agrega un arco a este DiGraphMatrix
+     * <b>Pre</b>: Los nodos src y dst deben encontrase en el DiGraphMatrix
+     * y no debe existir un arco entre ellos.
+     * <b>Post</b>: El DiGraphMatrix contendra un nuevo arco que tendra a
+     * src y dst como nodos fuente y destino respectivamente y el costo
+     * {@code costo}.
      *
      * @param src nodo fuente del arco
      * @param dst nodo destino del arco
      * @param costo costo del arco
      * @return El arco agregado y null en caso de que los nodos src y dst no se
-     * encuentren en el DiGraphList.
+     * encuentren en el DiGraphMatrix
      *
      */
     public Arc addArc(int src, int dst, double costo) {
         if ((0 <= src && src < this.numNodes) &&
             (0 <= dst && dst < this.numNodes)) {
-            if (!(this.isArc(src, dst))) {
-                Arc nuevo = new Arc(src, dst, costo);
-                this.inArcs[dst].add(nuevo);
-                this.outArcs[src].add(nuevo);
+            if (!this.isArc(src, dst)) {
+                this.matrix[src][dst] = true;
+                Arc arco = new Arc(src, dst, costo);
                 this.numArcs++;
-                return (nuevo);
+                return arco;
             } else {
                 return null;
             }
@@ -202,7 +195,7 @@ public class DiGraphList extends DiGraph {
      * <b>Pre</b>: true
      * <b>Post</b>: etse arco va de {@code src} a {@code dst} y su identificador
      * es {@code ident}
-     *
+     * 
      * @param src nodo fuente del arco
      * @param dst nodo destino del arco
      * @param  ident identificador del arco
@@ -212,12 +205,11 @@ public class DiGraphList extends DiGraph {
     public Arc addArc(int src, int dst, String ident) {
         if ((0 <= src && src < this.numNodes) &&
             (0 <= dst && dst < this.numNodes)) {
-            if (!(this.isArc(src, dst))) {
-                Arc nuevo = new Arc(src, dst, ident);
-                this.inArcs[dst].add(nuevo);
-                this.outArcs[src].add(nuevo);
+            if (!this.isArc(src, dst)) {
+                this.matrix[src][dst] = true;
+                Arc arco = new Arc(src, dst, ident);
                 this.numArcs++;
-                return (nuevo);
+                return arco;
             } else {
                 return null;
             }
@@ -242,12 +234,11 @@ public class DiGraphList extends DiGraph {
     public Arc addArc(int src, int dst, double costo, String ident) {
         if ((0 <= src && src < this.numNodes) &&
             (0 <= dst && dst < this.numNodes)) {
-            if (!(this.isArc(src, dst))) {
-                Arc nuevo = new Arc(src, dst, costo, ident);
-                this.inArcs[dst].add(nuevo);
-                this.outArcs[src].add(nuevo);
+            if (!this.isArc(src, dst)) {
+                this.matrix[src][dst] = true;
+                Arc arco = new Arc(src, dst, costo, ident);
                 this.numArcs++;
-                return (nuevo);
+                return arco;
             } else {
                 return null;
             }
@@ -257,95 +248,96 @@ public class DiGraphList extends DiGraph {
     }
 
     /**
-     * Permite agregar <i>num</i> nuevos nodos a este DiGraphList.
-     * <b>Pre</b>: Debe existir un DigraphList.
-     * <b>Post</b>: El DigraphList contendrá <i>num</i> nodos nuevos.
+     * Permite agregar <i>num</i> nuevos nodos a este DiGraphMatrix.
+     * <b>Pre</b>: Debe existir un DiGraphMatrix.
+     * <b>Post</b>: El DiGraphMatrix contendrá <i>num</i> nodos nuevos.
      *
      * @param num numero de nodos a agregar
      */
+    @Override
     public void addNodes(int num) {
         if (0 < num) {
-            List<Arc>[] arcosDeEntrada = new List[this.numNodes + num];
-            List<Arc>[] arcosDeSalida = new List[this.numNodes + num];
-            for (int k = 0; k < this.numNodes; k++) {
-                arcosDeEntrada[k] = this.inArcs[k];
-                arcosDeSalida[k] = this.outArcs[k];
+            DiGraphMatrix nuevo = new DiGraphMatrix(this.numNodes + num);
+            for (int i = 0; i < this.numNodes; i++) {
+                for (int j = 0; j < this.numNodes; j++) {
+                    if (this.matrix[i][j]) {
+                        nuevo.matrix[i][j] = true;
+                    }
+                }
             }
-            this.numNodes = this.numNodes + num;
-            this.inArcs = arcosDeEntrada;
-            this.outArcs = arcosDeSalida;
+            this.numNodes += num;
         }
     }
 
     /**
      * Retorna un Digraph que es la clausura transitiva de este DiGraph
-     * calculada usando un algoritmo analogo al de Roy-Warshal.
-     * <b>Pre</b>: Debe existir un DigraphList.
-     * <b>Post</b>: Se obtendra un Digraph relacionado con la lista de arcos
-     * adyacentes del DigraphList, calculada usando un algoritmo analogo al
-     * de Roy -Warshal
+     * calculada usando el algoritmo Roy-Warshal.
+     * <b>Pre</b>: Debe existir un DiGraphMatrix.
+     * <b>Post</b>: Se obtendra el Digraph relacionado con la matriz de
+     * adyacencias del DiGraphMatrix, calculada usando el algoritmo de
+     * Roy-Warshal
      *
      * @return un Digraph que es la clausura transitiva de este DiGraph
-     * calculada usando un algoritmo analogo al de Roy-Warshal
+     * calculada usando el algoritmo Roy-Warshal
      */
     @Override
-    public DiGraph alcance() {
-        DiGraphList salida = this.clone();
-        for (int i = 0; i < salida.numNodes; i++) {
-            salida.addArc(i, i);
+    public DiGraph alcance() {        
+        // Se trabaja sobre una copia, para no modificar el original
+        DiGraphMatrix nuevo = this.clone();
+        // Añadimos la diagonal principal...
+        for (int i = 0; i < nuevo.numNodes; i++){
+            nuevo.addArc(i, i);
         }
+        // Se calculan los demás arcos transitivos
         int flag;
         do {
-            boolean stop = false;
-            flag = salida.numArcs;
-            for (int a = 0; a < salida.numNodes && !stop; a++) {
-                for (int i = 0; i < salida.outArcs[a].size() && !stop; i++) {
-                    int b = salida.outArcs[a].get(i).getDst();
-                    for (int j = 0; j < salida.outArcs[b].size() && !stop; j++){
-                        int c = salida.outArcs[b].get(j).getDst();
-                        if (!salida.isArc(a, c)) {
-                            salida.addArc(a, c);
-                            stop = true;
+            flag = nuevo.numArcs;
+            for (int i = 0; i < nuevo.numNodes; i++) {
+                for (int j = 0; j < nuevo.numNodes; j++) {
+                    if (nuevo.matrix[i][j] && i != j) {
+                        for (int k = 0; k < nuevo.numNodes; k++) {
+                            if (nuevo.isArc(j, k) && !nuevo.isArc(i, k)) {
+                                nuevo.addArc(i, k);
+                            }
                         }
                     }
                 }
             }
-        } while (salida.numArcs > flag);
-        return salida;
-    }
-
-    /**
-     * Genera una copia de este DiGraphList.
-     * <b>Pre</b>: Debe existir un DiGraphList.
-     * <b>Post</b>: El DiGraphList tendra una copia exacta.
-     *
-     * @return una copia de este DiGraphList.
-     */
-    @Override
-    public DiGraphList clone() {
-        DiGraphList nuevo = new DiGraphList(this);
+        } while (nuevo.numArcs > flag);
         return nuevo;
     }
 
     /**
-     * Elimina un arco de este DiGraphList.
+     * Genera una copia de este DiGraphMatrix.
+     * <b>Pre</b>: Debe existir un DiGraphMatrix.
+     * <b>Post</b>: El DiGraphMatrix tendra una copia exacta.
+     *
+     * @return una copia de este DiGraphMatrix.
+     */
+    @Override
+    public DiGraphMatrix clone() {
+        DiGraphMatrix nuevo = new DiGraphMatrix(this);
+        return nuevo;
+    }
+
+    /**
+     * Elimina un arco de este DiGraphMatrix
      * <b>Pre</b>: Los nodos fuente y destino, es decir nodeIniId y nodeFinId
-     * deben existir en el DigraphList.
+     * deben existir en el DiGraphMatrix.
      * <b>Post</b>: No existira arco entre los nodos nodeIniId y nodeFinId que
-     * pertencen al DigraphList.
+     * pertencen al DiGraphMatrix.
      *
      * @param nodeIniId nodo fuente del arco
      * @param nodeFinId nodo destino del arco
      * @return El arco eliminado y null en caso de que los nodos nodeIniId y
-     * nodeFinId no se encuentren en el DiGraphList.
+     * nodeFinId no se encuentren en el DiGraphMatrix.
      */
     public Arc delArc(int nodeIniId, int nodeFinId) {
         if ((0 <= nodeIniId && nodeIniId < this.numNodes) &&
             (0 <= nodeFinId && nodeFinId < this.numNodes)) {
             if (this.isArc(nodeIniId, nodeFinId)) {
                 Arc arco = new Arc(nodeIniId, nodeFinId);
-                this.inArcs[nodeFinId].remove(arco);
-                this.outArcs[nodeIniId].remove(arco);
+                this.matrix[nodeIniId][nodeFinId] = false;
                 this.numArcs--;
                 return arco;
             } else {
@@ -356,9 +348,9 @@ public class DiGraphList extends DiGraph {
         }
     }
 
-   /**
-     * Determina si el DiGraph g es igual a este DiGraphList.
-     * <b>Pre</b>: debe existir un DigraphList y un Digraph g.
+    /**
+     * Determina si el DiGraph g es igual a este DiGraphMatrix
+     * <b>Pre</b>: debe existir un DiGraphMatrix y un Digraph g.
      * <b>Post</b>: Se obtendra true en caso de que los grafos relacionados sean
      * iguales y false en caso contrario.
      *
@@ -366,16 +358,18 @@ public class DiGraphList extends DiGraph {
      * @return true si los dos DiGraph contienen los mismos nodos y los mismos
      * arcos, return false en caso contrario.
      */
+    @Override
     public boolean equals(DiGraph g) {
         if (this.numArcs == g.numArcs && this.numNodes == g.numNodes) {
-            boolean out = true;
-            for (int i = 0; i < this.numNodes && out; i++) {
-                Arc[] arrArcs = (Arc[])this.outArcs[i].toArray();
-                for (int j = 0; j < arrArcs.length; j++) {
-                    out = g.isArc(i, arrArcs[j].getDst());
+            boolean eq = true;
+            for (int i = 0; i < this.numNodes && eq; i++) {
+                for (int j = 0; j < this.numNodes && eq; j++) {
+                    if (this.matrix[i][j] != g.isArc(i, j)) {
+                        eq = false;
+                    }
                 }
             }
-            return out;
+            return eq;
         } else {
             return false;
         }
@@ -383,8 +377,8 @@ public class DiGraphList extends DiGraph {
 
     /**
      * Busca el Arco cuyo nodo fuente es nodoSrc y nodo destino es nodoDst.
-     * <b>Pre</b>: Los nodos nodoSrc y nodoDst deben pertenecer al DigraphList
-     * y debe existir un arco entre ellos.
+     * <b>Pre</b>: Los nodos nodoSrc y nodoDst deben pertenecer al
+     * DiGraphMatrix y debe existir un arco entre ellos.
      * <b>Post</b>: Se obtendra, en caso de que exista, el arco cuyos nodos
      * fuente y destino son nodoSrc y nodoDst respectivamente.
      *
@@ -395,15 +389,15 @@ public class DiGraphList extends DiGraph {
      */
     public Arc getArc(int nodoSrc, int nodoDst) {
         if (this.isArc(nodoSrc, nodoDst)) {
-            return (new Arc(nodoSrc,nodoDst));
+            return new Arc(nodoSrc, nodoDst);
         } else {
             return null;
         }
     }
 
     /**
-     * Retorna el grado de un nodo en este DiGraphList.
-     * <b>Pre</b>: El nodo nodeId debe pertencer al DigraphList.
+     * Retorna el grado de un nodo en este DiGraphMatrix.
+     * <b>Pre</b>: El nodo nodeId debe pertencer al DiGraphMatrix
      * <b>Post</b>: Se obtendra el numero de arcos que llegan y salen de nodeId,
      * es decir el grado.
      *
@@ -415,8 +409,8 @@ public class DiGraphList extends DiGraph {
     }
 
     /**
-     * Retorna el grado interno de un nodo en este DiGraphList.
-     * <b>Pre</b>: El nodo nodeId debe pertenecer al DigraphList.
+     * Retorna el grado interno de un nodo en este DiGraphMatrix
+     * <b>Pre</b>: El nodo nodeId debe pertenecer al DiGraphMatrix
      * <b>Post</b>: Se obtendra el numero de arcos que llegan a NodeId, es decir
      * el grado interno.
      *
@@ -424,39 +418,52 @@ public class DiGraphList extends DiGraph {
      * @return el grado interno del nodo nodeId en este Grafo.
      */
     public int getInDegree(int nodeId) {
-        return this.inArcs[nodeId].size();
+        int k = 0;
+        for(int i=0; i<this.numNodes;i++){
+            if(this.matrix[i][nodeId] == true ){
+                k++;
+            }
+	}
+	return k;
     }
 
     /**
      * Retorna la lista de arcos que tienen a nodeId como destino.
-     * <b>Pre</b>: El nodoId debe pertencer al DigraphList.
+     * <b>Pre</b>: El nodoId debe pertencer al DiGraphMatrix.
      * <b>Post</b>: Se obtendra la lista de arcos que tienen a nodeId como nodo
      * final.
      *
      * @param nodeId identificador del nodo
      * @return la lista de arcos que tienen a nodeId como destino.
      */
+    @Override
     public List<Arc> getInEdges(int nodeId) {
-        return this.inArcs[nodeId];
+        List<Arc> arcos = new Lista();
+        for (int k = 0; k < this.numNodes; k++) {
+            if(this.matrix [k][nodeId]== true){
+                arcos.add(new Arc (k, nodeId));
+            }
+        }
+        return arcos;
     }
 
     /**
-     * Retorna el numero de arcos en el DigraphList.
-     * <b>Pre</b>: Debe existir un DigraphList.
+     * Retorna el numero de arcos en el DiGraphMatrix.
+     * <b>Pre</b>: Debe existir un DiGraphMatrix.
      * <b>Post</b>: Se obtendra el numero de arcos que pertencen al
-     * DigraphList.
+     * DiGraphMatrix.
      *
-     * @return numero de arcos que hay en el DigraphList.
+     * @return numero de arcos que hay en el DiGraphMatrix.
      */
     public int getNumberOfArcs() {
         return this.numArcs;
     }
 
     /**
-     * Retorna el numero de nodos que hay en el DigraphList.
-     * <b>Pre</b>: Debe existir un DigraphList.
+     * Retorna el numero de nodos que hay en el DiGraphMatrix.
+     * <b>Pre</b>: Debe existir un DiGraphMatrix.
      * <b>Post</b>: Se obtendra el numero de nodos que pertencen al
-     * DigraphList.
+     * DiGraphMatrix.
      *
      * @return numero de nodos en el grafo
      */
@@ -465,8 +472,8 @@ public class DiGraphList extends DiGraph {
     }
 
     /**
-     * Retorna el grado externo de un nodo en este DiGraphList.
-     * <b>Pre</b>: El nodo nodeId debe pertenecer al DigraphList.
+     * Retorna el grado externo de un nodo en este DiGraphMatrix.
+     * <b>Pre</b>: El nodo nodeId debe pertenecer al DiGraphMatrix.
      * <b>Post</b>: Se obtendra el numero de arcos que salen de nodeId, es decir
      * el grado externo.
      *
@@ -474,25 +481,39 @@ public class DiGraphList extends DiGraph {
      * @return el grado externo del nodo nodeId en este Grafo
      */
     public int getOutDegree(int nodeId) {
-        return this.outArcs[nodeId].size();
-    }
+
+    int k = 0;
+    for(int i=0; i<numNodes;i++){
+	 if(this.matrix[nodeId][i] == true ){
+	   k++;
+	   }
+	 }
+	 return k;
+   }
 
     /**
      * Retorna la lista de arcos que tienen a nodeId como fuente
-     * <b>Pre</b>: El nodo nodeId debe pertenecer al DigraphList.
+     * <b>Pre</b>: El nodo nodeId debe pertenecer al DiGraphMatrix.
      * <b>Post</b>:Se obtendra la lista de arcos que tienen a nodeId como nodo
      * inicial.
      *
      * @param nodeId identificador del nodo
      * @return la lista de arcos que tienen a nodeId como fuente
      */
+    @Override
     public List<Arc> getOutEdges(int nodeId) {
-        return this.outArcs[nodeId];
+        List<Arc> arcos = new Lista();
+        for (int k = 0; k < this.numNodes; k++) {
+            if(this.matrix [nodeId][k]== true){
+                arcos.add(new Arc (nodeId, k));
+            }
+        }
+        return arcos;
     }
 
     /**
      * Retorna la lista de predecesores del nodo nodeId
-     * <b>Pre</b>: El nodo nodeId debe pertenecer al DigraphList.
+     * <b>Pre</b>: El nodo nodeId debe pertenecer al DiGraphMatrix.
      * <b>Post</b>: Se obtendra la lista de nodos que tienen a nodeId como nodo
      * de destino.
      *
@@ -501,16 +522,17 @@ public class DiGraphList extends DiGraph {
      */
     public List<Integer> getPredecesors(int nodeId) {
         List<Integer> predecesors = new Lista();
-        Arc[] arrArcs = (Arc[])this.inArcs[nodeId].toArray();
-        for (int k = 0; k < arrArcs.length; k++) {
-            predecesors.add(new Integer(arrArcs[k].getSrc()));
+        for (int k = 0; k < this.numNodes; k++) {
+            if(this.matrix [k][nodeId] == true){
+                predecesors.add(new Integer(k));
+            }
         }
         return predecesors;
     }
 
     /**
      * Retorna la lista de sucesores del nodo nodeId
-     * <b>Pre</b>: El nodoId debe pertenecer al DigraphList.
+     * <b>Pre</b>: El nodoId debe pertenecer al DiGraphMatrix.
      * <b>Post</b>: Se obtendra la lista de nodos que tienen a nodeId como nodo
      * fuente.
      *
@@ -519,9 +541,10 @@ public class DiGraphList extends DiGraph {
      */
     public List<Integer> getSucesors(int nodeId) {
         List<Integer> sucesors = new Lista();
-        Arc[] arrArcs = (Arc[])this.outArcs[nodeId].toArray();
-        for (int k = 0; k < arrArcs.length; k++) {
-            sucesors.add(new Integer(arrArcs[k].getDst()));
+        for (int k = 0; k < this.numNodes; k++) {
+            if(this.matrix [nodeId][k]== true){
+                sucesors.add(new Integer(k));
+            }
         }
         return sucesors;
     }
@@ -543,15 +566,14 @@ public class DiGraphList extends DiGraph {
         int dst = arco.getDst();
         if ((0 <= src && src < this.numNodes) &&
             (0 <= dst && dst < this.numNodes)) {
-            es = (this.outArcs[src].contains(arco) &&
-                  this.inArcs[src].contains(arco));
+            es = this.matrix[src][dst];
         }
         return es;
     }
 
     /**
-     * Indica si un arco existe en este DiGraphList.
-     * <b>Pre</b>: Los nodos src y dst deben pertenecer al DigraphList.
+     * Indica si un arco existe en este DiGraphMatrix.
+     * <b>Pre</b>: Los nodos src y dst deben pertenecer al DiGraphMatrix.
      * <b>Post</b>: Se obtendra true en caso de que el arco exista y false si
      * ocurre lo contrario.
      *
@@ -565,15 +587,14 @@ public class DiGraphList extends DiGraph {
         boolean es = false;
         if ((0 <= src && src < this.numNodes) &&
             (0 <= dst && dst < this.numNodes)) {
-            es = (this.outArcs[src].contains(new Arc(src,dst)) &&
-                  this.inArcs[src].contains(new Arc(src,dst)));
+            es = this.matrix[src][dst];
         }
         return es;
     }
 
     /**
-     * Inicializa este DiGraphList en el DiGraph representado en el contenido
-     * del archivo {@code fileName}.
+     * Inicializa este DiGraphMatrix en el DiGraph representado en el
+     * contenido del archivo {@code fileName}.
      * <blockquote>
      * <p><b>Sintaxis</b>:</p>
      * <p>numNodos numArcos</p>
@@ -588,8 +609,8 @@ public class DiGraphList extends DiGraph {
      * <b>Pre</b>: {@code fileName} debe existir, ser un archivo, poder leerse,
      * no puede tener errores de formato ni inconsistencias en el número de
      * nodos o arcos.
-     * <b>Post</b>: Este DiGraphList se inicializa exitosamente con el DiGraph
-     * representado en el archivo {@code fileName}.
+     * <b>Post</b>: Este DiGraphMatrix se inicializa exitosamente con el
+     * DiGraph representado en el archivo {@code fileName}.
      *
      * @param fileName Nombre del archivo a leer
      * @throws IOException En caso de que {@code fileName} no exista, no sea un
@@ -597,7 +618,7 @@ public class DiGraphList extends DiGraph {
      * inconsistencia en cuanto al numero de arcos o el numero de nodos
      */
     public void read(String fileName) throws IOException {
-        if ((new File(fileName)).exists() &&
+       if ((new File(fileName)).exists() &&
             (new File(fileName)).isFile() &&
             (new File(fileName)).canRead())  {
             BufferedReader inbuff = null;
@@ -608,9 +629,9 @@ public class DiGraphList extends DiGraph {
                         " al programador...");
                 System.out.println("MENSAJE:" + fnfe.getMessage() + "\n" +
                         "CAUSA:" + fnfe.getCause().toString() + "\n");
-                throw new ExcepcionArchivoNoSePuedeLeer("Problema Leyendo el" +
-                        " archivo \"" + fileName +
-                        "\" al momento de crear el buffer lector...\n");
+                throw new ExcepcionArchivoNoSePuedeLeer("\nProblema Leyendo" +
+                        " el archivo \"" + fileName + "\" al momento de crear" +
+                        " el buffer lector...\n");
             }
             String linea = null;
             try {
@@ -620,9 +641,8 @@ public class DiGraphList extends DiGraph {
                         " al programador...");
                 System.out.println("MENSAJE:" + ioe.getMessage() + "\n" +
                         "CAUSA:" + ioe.getCause().toString() + "\n");
-                throw new ExcepcionArchivoNoSePuedeLeer("Problema Leyendo la" +
-                        "primera linea del archivo \"" + fileName +
-                        "\"");
+                throw new ExcepcionArchivoNoSePuedeLeer("\nProblema Leyendo" +
+                        " la primera linea del archivo \"" + fileName + "\"");
             }
             String[] tokens = linea.split(" ");
             if (tokens.length == 2) {
@@ -631,94 +651,93 @@ public class DiGraphList extends DiGraph {
                     /* Aqui empiezan las diferencias en este constructor entre
                      * DiGraphList y DiGraphMatrix
                      */
-                    this.inArcs = new List[new Integer(tokens[0]).intValue()];
-                    this.outArcs = new List[new Integer(tokens[0]).intValue()];
-                    for (int k = 0; k < this.inArcs.length; k++) {
-                        this.inArcs[k] = new Lista();
-                        this.outArcs[k] = new Lista();
-                    }
+                    this.matrix = new boolean
+                            [new Integer(tokens[0]).intValue()]
+                            [new Integer(tokens[0]).intValue()];
                     /* Fin de las diferencias en este constructor entre
                      * DiGraphList y DiGraphMatrix
                      */
                     this.numNodes = new Integer(tokens[0]).intValue();
-                    int nArcos = new Integer(tokens[1]).intValue();
-                    this.fillFromFile(inbuff, fileName, nArcos);
+                    int nArc = new Integer(tokens[1]).intValue();
+                    this.fillFromFile(inbuff, fileName, nArc);
                 } else {
-                    throw new ExcepcionFormatoIncorrecto("En la primera linea" +
-                            " hay un error de sintaxis: Se esperaba un numero" +
-                            " seguido de otro numero (numNodos numArcos) y se" +
-                            " encontro: " + tokens[0] + " " + tokens[1] + "\n");
+                    throw new ExcepcionFormatoIncorrecto("\nEn la primera" +
+                            " linea hay un error de sintaxis:\nSe esperaba un" +
+                            " numero seguido de otro numero (numNodos" +
+                            " numArcos) y se encontro:\n\t\"" + tokens[0] +
+                            " " + tokens[1] + "\"\n");
                 }
             } else {
-                throw new ExcepcionFormatoIncorrecto("En la primera linea hay" +
-                        "un error de sintaxis: Se esperaban dos elementos (" +
-                        "numNodos numArcos), y se encontro:\n\t"+
-                        tokens.toString());
+                throw new ExcepcionFormatoIncorrecto("\nEn la primera linea" +
+                        " hay un error de sintaxis:\nSe esperaban dos" +
+                        " elementos (numNodos numArcos), y se encontro:\n\t" +
+                        "\"" + tokens.toString() + "\"");
             }
         } else if (!(new File(fileName)).exists()) {
-            throw new ExcepcionArchivoNoExiste("Problema al leer el archivo " +
-                    "\"" + fileName +"\": EL ARCHIVO NO EXISTE!!!");
+            throw new ExcepcionArchivoNoExiste("\nProblema al leer el archivo" +
+                    " \"" + fileName +"\": EL ARCHIVO NO EXISTE!!!");
         } else if (!(new File(fileName)).isFile()) {
-            throw new ExcepcionNoEsArchivo("Problema al leer el archivo \"" +
-                    fileName +"\": NO ES UN ARCHIVO!!!");
+            throw new ExcepcionNoEsArchivo("\nProblema al leer el archivo" +
+                    " \"" + fileName +"\": NO ES UN ARCHIVO!!!");
         } else if (!(new File(fileName)).canRead()) {
-            throw new ExcepcionArchivoNoSePuedeLeer("Problema al leer el ar" +
-                    "chivo \"" + fileName +"\": ESTE ARCHIVO NO SE PUEDE" +
+            throw new ExcepcionArchivoNoSePuedeLeer("\nProblema al leer el" +
+                    " archivo \"" + fileName +"\": ESTE ARCHIVO NO SE PUEDE" +
                     " LEER!!!");
         }
     }
 
     /**
      * Remueve todos los arcos de este grafo
-     * <b>Pre</b>: Debe existir un DigraphList, y sus nodos deben estar
+     * <b>Pre</b>: Debe existir un DiGraphMatrix, y sus nodos deben estar
      * conectados mediante arcos.
      * <b>Post</b>: Se obtendra la lista de los arcos que fueron eliminados.
      *
      * @return lista de arcos eliminados
      */
+    @Override
     public List<Arc> removeAllArcs() {
         List<Arc> lista = new Lista();
         for (int i = 0; i < this.numNodes; i++) {
-            Arc[] arrArcs = (Arc[])this.outArcs[i].toArray();
-            for (int j = 0; j < arrArcs.length; j++) {
-                lista.add(arrArcs[j]);
+            for (int j = 0; j < this.numNodes; j++) {
+                if(this.matrix[i][j]){
+                    this.matrix[i][j]= false;
+                    lista.add(new Arc (i, j));
+                }
             }
         }
-        this.inArcs = new List[this.numNodes];
-        this.outArcs = new List[this.numNodes];
         return lista;
     }
 
-    /**
+    /** 
      * Invierte la direccion de un arco
-     * <b>Pre</b>: Los nodos nodeIniId y nodeFinId deben pertenecer al
-     * DigraphList, y seran el nodo fuente y destino respectivamente en caso
-     * de que exista un arco entre ellos.
+     * <b>Pre</b>: Los nodos nodeIniId y nodeFinId deben pertenecer al 
+     * DiGraphMatrix, y seran el nodo fuente y destino respectivamente en
+     * caso de que exista un arco entre ellos.
      * <b>Post</b>: Se obtendra true en caso de que el arco haya sido invertido
      * y false en caso contrario.
-     *
+     * 
      * @param nodeIniId nodo fuente del arco antes de invertirlo
      * @param nodeFinId nodo destino del arco antes de invertirlo
      * @return true si el arco fue invertido, false en caso contrario
      */
     public boolean reverseArc(int nodeIniId, int nodeFinId) {
-        if ((0 <= nodeIniId && nodeIniId < this.numNodes) &&
-            (0 <= nodeFinId && nodeFinId < this.numNodes)) {
-            if (this.isArc(nodeIniId, nodeFinId)) {
-                this.delArc(nodeIniId, nodeFinId);
-                this.addArc(nodeFinId, nodeIniId);
+        if((0 <= nodeIniId && nodeIniId < this.numNodes) &&
+            (0 <= nodeFinId && nodeFinId < this.numNodes)){
+            if (this.matrix[nodeIniId][nodeFinId]) {
+                this.matrix[nodeIniId][nodeFinId] = false;
+                this.matrix[nodeFinId][nodeIniId] = true;
                 return true;
             } else {
                 return false;
             }
-        } else {
+	} else {
             return false;
         }
     }
 
     /**
-     * Invierte todos los arcos del DiGraphList.
-     * <b>Pre</b>: Debe existir un DipraphList.
+     * Invierte todos los arcos del DiGraphMatrix.
+     * <b>Pre</b>: Debe existir un DipraphMatrix.
      * <b>Post</b>: Se obtiene true en caso de que se hayan invertido todos los
      * arcos y false en caso contrario.
      *
@@ -727,31 +746,36 @@ public class DiGraphList extends DiGraph {
      * debe quedar sin alteraciones.
      */
     public boolean reverseArcs() {
-        List<Arc> arcos = this.removeAllArcs();
-        while (!arcos.isEmpty()) {
-            Arc arco = arcos.remove(0);
-            this.addArc(arco.getDst(), arco.getSrc());
-        }
-        return true;
+        boolean[][] nueva = new boolean[this.numNodes][this.numNodes];
+        for(int i = 0; i < this.numNodes; i++) {
+            for(int j = 0; j < this.numNodes; j++) {
+                if(this.matrix[i][j]) {
+                    this.matrix[i][j] = false;
+		    nueva[j][i] = true;
+		}
+            }
+	}
+        this.matrix = nueva;
+	return true;
     }
 
     /**
-     * Retorna la representacion en String de este DiGraphList.
-     * <b>Pre</b>: Debe existir un DigraphList.
-     * <b>Post</b>: Se obtendra la representacion en String del DigraphList.
-     *
-     * @return la representacion en String de este DiGraphList.
+     * Retorna la representacion en String de este DiGraphMatrix.
+     * <b>Pre</b>: Debe existir un DiGraphMatrix.
+     * <b>Post</b>: Se obtendra la representacion en String del
+     * DiGraphMatrix.
+     * 
+     * @return la representacion en String de este DiGraphMatrix.
      */
     @Override
     public String toString() {
         String string = this.numNodes + " " + this.numArcs;
-        for (int i = 0; i < this.numNodes; i++) {
-            for (int j = 0; j < this.outArcs[i].size(); j++) {
-                string += "\n" + this.outArcs[i].get(j).getSrc() + " " +
-                        this.outArcs[i].get(j).getDst();
-            }
-        }
-        return string;
+        for( int i = 0; i < this.numNodes; ++i ) {
+            for( int j = 0; j < this.numNodes; ++j ) {
+                string += matrix[i][j] ? "\n" + i + " " + j : "";
+	    }
+	}
+	return string;
     }
 
     /**
@@ -763,9 +787,9 @@ public class DiGraphList extends DiGraph {
      * <p>nodoSrc nodoDst</p>
      * <p>nodoSrc nodoDst</p>
      * <p>nodoSrc nodoDst</p>
-     * <p>&nbsp;.&nbsp;.</p>
-     * <p>&nbsp;.&nbsp;.</p>
-     * <p>&nbsp;.&nbsp;.</p>
+     * <p>   .       .   </p>
+     * <p>   .       .   </p>
+     * <p>   .       .   </p>
      * <p>nodoSrc nodoDst</p>
      * </blockquote>
      * <b>pre</b>: {@code fileName} debe existir, ser un archivo, y poder
@@ -789,9 +813,10 @@ public class DiGraphList extends DiGraph {
                     /* A partir de aqui es diferente entre DiGraphList y
                      * DiGraphMatrix
                      */
-                    Object[] arrArcs = this.outArcs[i].toArray();
-                    for (int j = 0; j < arrArcs.length; j++) {
-                        out.println(i + " " + ((Arc)arrArcs[j]).getDst());
+                    for (int j = 0; j < this.numNodes; j++) {
+                        if (this.matrix[i][j]) {
+                            out.println(i + " " + j);
+                        }
                     }
                     // Fin de las diferencias
                 }
@@ -808,8 +833,8 @@ public class DiGraphList extends DiGraph {
                     " archivo \"" + fileName +"\":\n\tEL ARCHIVO NO" +
                     " EXISTE!!!\n");
         } else if (!(new File(fileName)).isFile()) {
-            throw new ExcepcionNoEsArchivo("\nProblema al leer el" +
-                    " archivo \"" + fileName +"\":\n\tNO ES UN ARCHIVO!!!\n");
+            throw new ExcepcionNoEsArchivo("\nProblema al leer el archivo" +
+                    " \"" + fileName + "\":\n\tNO ES UN ARCHIVO!!!\n");
         } else if (!(new File(fileName)).canWrite()) {
             throw new ExcepcionArchivoNoSePuedeEscribir("\nProblema al leer" +
                     " el archivo \"" + fileName +"\":\n\tESTE ARCHIVO NO SE" +
@@ -817,7 +842,7 @@ public class DiGraphList extends DiGraph {
         }
     }
 
-    // METODOS PRIVADOR AUXILIARES:
+    // METODOS PRIVADOS AUXILIARES:
 
     /**
      * Método auxiliar para llenar este DiGraph leyendo desde el archivo de
@@ -827,8 +852,8 @@ public class DiGraphList extends DiGraph {
      * nodos o arcos. {@code inbuff} debe estar abierto y haberse leido solo la
      * primera linea. {@code nArc} debe ser el numero de arcos leido en la
      * primera linea de {@code fileName}.
-     * <b>Post</b>: Este DiGraphList se inicializa exitosamente con el DiGraph
-     * representado en el archivo {@code fileName}.
+     * <b>Post</b>: Este DiGraphMatrix se inicializa exitosamente con el
+     * DiGraph representado en el archivo {@code fileName}.
      * @param inBuff Buffer de lectura a travez del cual se lee {@code fileName}
      * @param fileName Nombre del archivo a leer
      * @param nArc Número de arcos que tiene este DiGraph.
@@ -859,7 +884,7 @@ public class DiGraphList extends DiGraph {
                     + " al programador...");
             System.out.println("MENSAJE:" + ioe.getMessage() + "\n"
                     + "CAUSA:" + ioe.getCause().toString() + "\n");
-            throw new ExcepcionArchivoNoSePuedeLeer("\nProblema Leyendo la"
+            throw new ExcepcionArchivoNoSePuedeLeer("Problema Leyendo la"
                         + "linea " + k + " del archivo \"" + fileName
                         + "\"");
         }
@@ -875,15 +900,17 @@ public class DiGraphList extends DiGraph {
                                 "grafo de entrada tiene un numero de nodos " +
                                 "distinto al indicado al principio del ar" +
                                 "chivo:\nEncontrado \"" + tokens[0] + "\" en" +
-                                " la linea " + k + ", y se esperaba en el" +
-                                " intervalo [0 - " + nArc + "]");
+                                " la linea " + k + ", y " +
+                                "se esperaba en el intervalo [0 - " +
+                                nArc + "]");
                     } else if (dst < 0 || this.numNodes <= dst) {
                         throw new ExcepcionInconsistenciaNumeroDeNodos("\nEl " +
                                 "grafo de entrada tiene un numero de nodos " +
                                 "distinto al indicado al principio del ar" +
                                 "chivo:\nEncontrado \"" + tokens[1] + "\" en" +
-                                " la linea " + k + ", y se esperaba en el" +
-                                " intervalo [0 - " + nArc + "]");
+                                " la linea " + k + ", y " +
+                                "se esperaba en el intervalo [0 - " +
+                                nArc + "]");
                     }
                     this.addArc(src,dst);
                 } else {
@@ -895,9 +922,9 @@ public class DiGraphList extends DiGraph {
                 }
             } else {
                 throw new ExcepcionFormatoIncorrecto("\nEn la linea " + k +
-                        " del archivo \"" + fileName + "\" hay" +
-                        " un error de sintaxis:\nSe esperaban dos elementos" +
-                        " (src dst), y se encontro:\n\t\"" + linea + "\"\n");
+                            " del archivo \"" + fileName + "\" hay " +
+                        "un error de sintaxis:\nSe esperaban dos elementos (" +
+                        "src dst), y se encontro:\n\t\"" + linea + "\"\n");
             }
             k++;
             try {
@@ -907,8 +934,9 @@ public class DiGraphList extends DiGraph {
                         + " al programador...");
                 System.out.println("MENSAJE:" + ioe.getMessage() + "\n"
                         + "CAUSA:" + ioe.getCause().toString() + "\n");
-                throw new ExcepcionArchivoNoSePuedeLeer("\nProblema Leyendo la"
-                        + "linea " + k + " del archivo \"" + fileName + "\"");
+                throw new ExcepcionArchivoNoSePuedeLeer("Problema Leyendo la"
+                        + "linea " + k + " del archivo \"" + fileName
+                        + "\"");
             }
         }
         if (linea == null && k-2 != nArc) {
@@ -916,6 +944,24 @@ public class DiGraphList extends DiGraph {
                     "da tiene menos arcos que los indicados al principio del " +
                     "archivo:\nTiene " + (k-2) + " arco(s), y se esperaba(n) " +
                     nArc + " arco(s)");
+        }
+    }
+
+    /**
+     * Copia la matriz {@code src} en la matriz {@code dst}
+     * <b>Pre</b>: Ambas matrices deben tener el mismo tamaño.
+     * <b>Pre</b>: la matriz {@code dst} será igual a la matrix {@code src}.
+     *
+     * @param src matriz origen de la copia
+     * @param dst matriz destino de la copia
+     */
+    private void copy_matrix(boolean src[][], boolean dst[][]) {
+        if (src.length == dst.length && src[0].length == dst[0].length) {
+            for (int i = 0; i < src.length; ++i) {
+                for (int j = 0; j < src[0].length; ++j) {
+                    dst[i][j] = src[i][j];
+                }
+            }
         }
     }
 }

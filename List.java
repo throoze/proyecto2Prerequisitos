@@ -1,3 +1,6 @@
+
+import java.util.Iterator;
+
   /**
    * List es una interfaz que determina los metodos basicos que debe tener una
    * lista independiente de su implementacion interna
@@ -129,4 +132,6 @@ public interface List <E> {
      */
     @Override
     public String toString();
+
+    public Iterator iterator();
 }
