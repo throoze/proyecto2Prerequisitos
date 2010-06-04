@@ -11,9 +11,6 @@ import java.util.Iterator;
  */
 public class Main {
     
-    private String[] nameNodes;
-    private int numNodes;
-
     private static String getName(int n, String[] nombres) {
         if (0 <= n && n < nombres.length) {
             return nombres[n];
@@ -33,23 +30,20 @@ public class Main {
     }
 
     private static DiGraph minimo (DiGraph grafo) {
+        DiGraph ret = null;
         if (grafo.numNodes < grafo.numArcs) {
-            System.out.print("\nEl grafo original es:\n");
-            System.out.println(grafo.toString()+"\n\n");
-            DiGraph ret = null;
 
             ret = (DiGraphMatrix) grafo.clone();
-            System.out.print("\nEl grafo clonado es:\n");
-            System.out.println(ret.toString()+"\n\n");
+            
+            // Se calcula el alcance del grafo para usarlo como punto de partida
             ret = ret.alcance();
-            System.out.print("\nEl grafo maximo es:\n");
-            System.out.println(ret.toString()+"\n\n");
 
             // Se agrega la identidad
             for( int i = 0; i < ret.numNodes; ++i ) {
                 ret.delArc(i, i);
             }
 
+            // Se eliminan los arcos transitivos
             for( int k = 0; k < ret.numNodes; ++k ) {
                 for( int i = 0; i < ret.numNodes; ++i ) {
                     if( (i != k) && ret.isArc(i,k) ) {
@@ -61,13 +55,22 @@ public class Main {
                     }
                 }
             }
-
-            System.out.print("\nEl grafo minimo es:\n");
-            System.out.println(ret.toString()+"\n\n");
-            return ret;
         } else {
-            return new DiGraphMatrix();
+            
+            ret = ((DiGraphList) grafo.clone());
+
+            // Se calcula la lista sobre la que se va a iterar
+            Arc[] arcos = (Arc[]) ret.alcance().removeAllArcs().toArray();
+            Buscar<Arc> buscador = new Buscar(arcos);
+            for (int k = 0; k < arcos.length; k++) {
+                Arc actual = arcos[k];
+                for (int i = 0; i < arcos.length; i++) {
+                    // AQUI ME QUEDE... BUSCAR LA MANERA DE ITERAR SOBRE LOS ARCOS...
+                }
+            }
+
         }
+        return ret;
     }
 
     private static boolean pertenece(String elem, String[] arr) {
