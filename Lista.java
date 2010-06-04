@@ -352,8 +352,9 @@ public class Lista<E> implements List<E>{
         return s;
     }
 
+    //FALTA JAVADOC
     public Iterator iterator() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new GeneradorDeElementos(this);
     }
 
     /**
@@ -464,6 +465,32 @@ public class Lista<E> implements List<E>{
                 return false;
             }
         }
+    }
+
+    // FALTA JAVADOC
+    private class GeneradorDeElementos <E> implements Iterator {
+        
+        private Nodo prox;
+        
+        public GeneradorDeElementos(Lista<E> lista) {
+            prox = lista.head;
+        }
+
+        public boolean hasNext() {
+            return ((this.prox.next != null) &&
+                    this.prox.next.elem != null);
+        }
+
+        public Object next() {
+            Object siguiente = this.prox.next.elem;
+            this.prox = this.prox.next;
+            return siguiente;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
     }
 
     // Funciones auxiliares:

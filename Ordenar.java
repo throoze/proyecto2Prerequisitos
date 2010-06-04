@@ -6,7 +6,9 @@
  * @author throoze
  */
 public class Ordenar {
-    
+
+    // Ordenar arreglos de int:
+
     /**
      * Funcion auxiliar que revisa si un arreglo de enteros esta ordenado.
      * @param a El arreglo a revisar.
@@ -141,7 +143,10 @@ public class Ordenar {
             arreglo[l]=tmp;
         }
     }
-    
+
+
+
+    /////////////////////////// MEZCLA DE INT: //////////////////////////////
     /**
      * Segundo procedimiento auxiliar para implementar el ordenamiento por mez-
      * cla. Se encarga de mezclar los arreglos ya ordenados.
@@ -227,9 +232,14 @@ public class Ordenar {
         ordMezclaInt(a, 0, a.length);
     }
 
+    ///////////////////////// FIN DE MEZCLA DE INT: ///////////////////////////
 
 
-    // MEZCLA CON STRINGS:
+
+
+    // Ordenar arreglos de Strings lexicográficamente:
+
+    ///////////////////////// MEZCLA CON STRINGS:////////////////////////////
 
     /**
      * Segundo procedimiento auxiliar para implementar el ordenamiento por mez-
@@ -289,5 +299,7 @@ public class Ordenar {
     public static void mergesortString (String[] a) {
         ordMezclaString(a, 0, a.length);
     }
+
+    /////////////////////// FIN DE MEZCLA CON STRINGS:///////////////////////
 
 }
