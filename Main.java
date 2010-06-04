@@ -35,15 +35,15 @@ public class Main {
     private static DiGraph minimo (DiGraph grafo) {
         if (grafo.numNodes < grafo.numArcs) {
             System.out.print("\nEl grafo original es:\n");
-        System.out.println(grafo.toString()+"\n\n");
+            System.out.println(grafo.toString()+"\n\n");
             DiGraph ret = null;
 
             ret = (DiGraphMatrix) grafo.clone();
             System.out.print("\nEl grafo clonado es:\n");
-        System.out.println(ret.toString()+"\n\n");
+            System.out.println(ret.toString()+"\n\n");
             ret = ret.alcance();
             System.out.print("\nEl grafo maximo es:\n");
-        System.out.println(ret.toString()+"\n\n");
+            System.out.println(ret.toString()+"\n\n");
 
             // Se agrega la identidad
             for( int i = 0; i < ret.numNodes; ++i ) {
@@ -63,7 +63,7 @@ public class Main {
             }
 
             System.out.print("\nEl grafo minimo es:\n");
-        System.out.println(ret.toString()+"\n\n");
+            System.out.println(ret.toString()+"\n\n");
             return ret;
         } else {
             return new DiGraphMatrix();
@@ -279,7 +279,7 @@ public class Main {
                 }
                 for (int i = 2; i < tokens.length; i++) {
                     // ESTO HAY QUE BORRARLO
-                    System.out.println("\nEl arreglo de nombres es:\n");
+                    System.out.println("\nreadArcs: El arreglo de nombres es:\n");
                     System.out.print("{ " + names[0]);
                     for (int a = 1; a < names.length; a++) {
                         System.out.print(", " + names[a]);
@@ -315,41 +315,46 @@ public class Main {
         return lista;
     }
 
-    private static DiGraph read(String fileName, String[] names)
-                                 throws 
-                                        FileNotFoundException,
-                                        ExcepcionArchivoNoSePuedeLeer,
-                                        ExcepcionArchivoNoExiste,
-                                        ExcepcionNoEsArchivo,
-                                        ExcepcionFormatoIncorrecto,
-                                        ExcepcionInconsistenciaNumeroDeNodos,
-                                        ExcepcionInconsistenciaNumeroDeArcos
-    {
+    public static void write(String fileName) throws IOException {
+
+    }
+
+
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) throws IOException {
+        
+        //Arreglo donde se guardaran los nombres de los nodos
+        String[] names = null;
+        DiGraph digrafo = null;
+
         /* Si el archivo no es del formato nombreArchivo.input, lanza la
          * excepcion.
          */
-        if (fileName.matches("[[a-z][A-z][0-9][#$%&*+,-._~]]+?.input")) {
+        if (args[0].matches("[[a-z][A-z][0-9][#$%&*+,-._~]]+?.input")) {
             throw new ExcepcionFormatoIncorrecto("Problema de formato en el " +
                     "nombre del archivo:\nSe esperaba un archivo con la " +
-                    "extensión \".input\" y se encontró:\n\n\t\"" + fileName +
+                    "extensión \".input\" y se encontró:\n\n\t\"" + args[0] +
                     "\"\n\n");
         }
 
         /* Si el archivo 'fileName' no existe, o no es un archivo o no se puede
          * leer, se lanza la respectiva eexcepcion.
          */
-        if ((new File(fileName)).exists() &&
-            (new File(fileName)).isFile() &&
-            (new File(fileName)).canRead())  {
+        if ((new File(args[0])).exists() &&
+            (new File(args[0])).isFile() &&
+            (new File(args[0])).canRead())  {
             BufferedReader inBuff = null;
 
             // Se inicializa el buffer de lectura
             try {
-                inBuff = new BufferedReader(new FileReader(fileName));
+                inBuff = new BufferedReader(new FileReader(args[0]));
             } catch (FileNotFoundException fnfe) {
                 throw new ExcepcionArchivoNoSePuedeLeer("Esto no deberia " +
                         "pasar, contacte al programador...\nProblema Leyendo" +
-                        " el archivo \"" + fileName + "\" al momento de crear" +
+                        " el archivo \"" + args[0] + "\" al momento de crear" +
                         " el buffer lector...\n");
             }
             String linea = null;
@@ -360,7 +365,7 @@ public class Main {
             } catch (IOException ioe) {
                 throw new ExcepcionArchivoNoSePuedeLeer("Esto no deberia " +
                         "pasar, contacte al programador...\nProblema Leyendo " +
-                        "la primera linea del archivo \"" + fileName + "\"");
+                        "la primera linea del archivo \"" + args[0] + "\"");
             }
 
             /* Se le pasa la primera linea a la funcion 'readFirstLine',
@@ -372,7 +377,7 @@ public class Main {
              * nombres de los cursos que seran representados como los nodos del
              * grafo...
              */
-            names = readNames(inBuff,fileName,numNodes);
+            names = readNames(inBuff,args[0],numNodes);
             // ESTO HAY QUE BORRARLO
             System.out.println("\nEl arreglo de nombres es:\n");
             System.out.print("{ " + names[0]);
@@ -396,7 +401,7 @@ public class Main {
              * de cursos que tienen prerequisito. Este numero se guarda con el
              * fin de verificar luego inconsistencias con el numero de nodos.
              */
-            int numCurConPrereq = readNumConPrereq(inBuff,fileName,numLinea);
+            int numCurConPrereq = readNumConPrereq(inBuff,args[0],numLinea);
             System.out.println("read: La cantidad de cursos con prerequisito es: " + numCurConPrereq);
 
             /* Se lee a continuacion las siguientes 'numCurConPrereq' lineas,
@@ -405,7 +410,7 @@ public class Main {
              */
             List<Arc> arcos = readArcs(inBuff,
                                        names,
-                                       fileName,
+                                       args[0],
                                        numLinea,
                                        numCurConPrereq);
             System.out.println("read: La lista final es: \n" + arcos.toString());
@@ -413,9 +418,7 @@ public class Main {
             /* Ahora, con la información reunida, se procede a construir el
              * digrafo que va a devolver este método.
              */
-            DiGraph digrafo = null;
-            // ESTO HAY QUE CAMBIARLO!!!
-            if (false) {
+            if (arcos.size() <= numNodes) {
                 digrafo = new DiGraphList(numNodes);
             } else {
                 digrafo = new DiGraphMatrix(numNodes);
@@ -434,33 +437,26 @@ public class Main {
                 }
             }
             System.out.println("read: El digrafo a devolver por el read es:\n"+digrafo.toString());
-            return digrafo;
-        } else if (!(new File(fileName)).exists()) {
+        } else if (!(new File(args[0])).exists()) {
             throw new ExcepcionArchivoNoExiste("Problema al leer el archivo " +
-                    "\"" + fileName +"\": EL ARCHIVO NO EXISTE!!!");
-        } else if (!(new File(fileName)).isFile()) {
+                    "\"" + args[0] +"\": EL ARCHIVO NO EXISTE!!!");
+        } else if (!(new File(args[0])).isFile()) {
             throw new ExcepcionNoEsArchivo("Problema al leer el archivo \"" +
-                    fileName +"\": NO ES UN ARCHIVO!!!");
-        } else if (!(new File(fileName)).canRead()) {
+                    args[0] +"\": NO ES UN ARCHIVO!!!");
+        } else if (!(new File(args[0])).canRead()) {
             throw new ExcepcionArchivoNoSePuedeLeer("Problema al leer el ar" +
-                    "chivo \"" + fileName +"\": ESTE ARCHIVO NO SE PUEDE" +
+                    "chivo \"" + args[0] +"\": ESTE ARCHIVO NO SE PUEDE" +
                     " LEER!!!");
         }
-        return null;
-    }
 
-    public static void write(String fileName) throws IOException {
+        // FIN DEL PROCESO DE LECTURA
 
-    }
-
-
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) throws IOException {
-        String[] names = null;
-        DiGraph digrafo = read(args[0],names);
+        System.out.println("\nmain: El arreglo de nombres es:\n");
+        System.out.print("{ " + names[0]);
+        for (int a = 1; a < names.length; a++) {
+            System.out.print(", " + names[a]);
+        }
+        System.out.println(" }");
         DiGraph result = minimo(digrafo);
         System.out.print("\nEl grafo minimo es:\n");
         System.out.println(result.toString()+"\n\n");
