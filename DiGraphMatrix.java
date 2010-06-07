@@ -844,7 +844,7 @@ public class DiGraphMatrix extends DiGraph {
         } else if (!(new File(fileName)).canWrite()) {
             throw new ExcepcionArchivoNoSePuedeEscribir("\nProblema al leer" +
                     " el archivo \"" + fileName +"\":\n\tESTE ARCHIVO NO SE" +
-                    " PUEDE LEER!!!\n");
+                    " PUEDE ESCRIBIR!!!\n");
         }
     }
 

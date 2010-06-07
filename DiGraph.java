@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.util.Hashtable;
 
 /**
  * DiGraph es una interfaz que determina los metodos basicos que debe tener un
@@ -135,7 +134,7 @@ public abstract class DiGraph {
      */
     public abstract List<Arc> getInEdges(int nodeId );
 
-/**
+    /**
      * Retorna el numero de arcos en el grafo
      *
      * @return numero de arcos en el grafo

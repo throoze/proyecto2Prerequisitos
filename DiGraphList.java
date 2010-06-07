@@ -30,8 +30,8 @@ public class DiGraphList extends DiGraph {
     // Constructores:
 
     public DiGraphList() {
-        this.inArcs = null;
-        this.outArcs = null;
+        this.inArcs = new List[0];
+        this.outArcs = new List[0];
         this.numArcs = 0;
         this.numNodes = 0;
     }
@@ -98,8 +98,8 @@ public class DiGraphList extends DiGraph {
         }
         this.numNodes = g.numNodes;
         this.numArcs = 0;
-        for (int i = 0; i < this.numNodes; i++) {
-            for  (int j = 0; j < this.numNodes; j++) {
+        for (int i = 0; i < g.numNodes; i++) {
+            for  (int j = 0; j < g.numNodes; j++) {
                 if (g.isArc(i, j)) {
                     this.addArc(i, j);
                 }
@@ -501,9 +501,10 @@ public class DiGraphList extends DiGraph {
      */
     public List<Integer> getPredecesors(int nodeId) {
         List<Integer> predecesors = new Lista();
-        Arc[] arrArcs = (Arc[])this.inArcs[nodeId].toArray();
+        Object[] arrArcs = this.inArcs[nodeId].toArray();
         for (int k = 0; k < arrArcs.length; k++) {
-            predecesors.add(new Integer(arrArcs[k].getSrc()));
+            Arc arco = (Arc)arrArcs[k];
+            predecesors.add(new Integer(arco.getSrc()));
         }
         return predecesors;
     }
@@ -566,7 +567,7 @@ public class DiGraphList extends DiGraph {
         if ((0 <= src && src < this.numNodes) &&
             (0 <= dst && dst < this.numNodes)) {
             es = (this.outArcs[src].contains(new Arc(src,dst)) &&
-                  this.inArcs[src].contains(new Arc(src,dst)));
+                  this.inArcs[dst].contains(new Arc(src,dst)));
         }
         return es;
     }
@@ -813,7 +814,7 @@ public class DiGraphList extends DiGraph {
         } else if (!(new File(fileName)).canWrite()) {
             throw new ExcepcionArchivoNoSePuedeEscribir("\nProblema al leer" +
                     " el archivo \"" + fileName +"\":\n\tESTE ARCHIVO NO SE" +
-                    " PUEDE LEER!!!\n");
+                    " PUEDE ESCRIBIR!!!\n");
         }
     }
 

@@ -11,65 +11,35 @@ import java.util.Iterator;
  */
 public class Main {
     
-    private static String getName(int n, String[] nombres) {
-        if (0 <= n && n < nombres.length) {
-            return nombres[n];
-        } else {
-            return "";
-        }
-    }
-
-    private static int getNumber(String name, String[] nombres) {
-        int posicion = Buscar.bb(nombres, name);
-        if (0 <= posicion && posicion < nombres.length &&
-                nombres[posicion].equals(name)) {
-            return posicion;
-        } else {
-            return -1;
-        }
-    }
-
     private static DiGraph minimo (DiGraph grafo) {
         DiGraph ret = null;
         if (grafo.numNodes < grafo.numArcs) {
-
             ret = (DiGraphMatrix) grafo.clone();
-            
-            // Se calcula el alcance del grafo para usarlo como punto de partida
-            ret = ret.alcance();
+        } else {
+            ret = (DiGraphList) grafo.clone();
+        }
 
-            // Se agrega la identidad
+        // Se calcula el alcance del grafo para usarlo como punto de partida
+        ret = ret.alcance();
+
+        // Se agrega la identidad
+        for( int i = 0; i < ret.numNodes; ++i ) {
+            ret.delArc(i, i);
+        }
+
+        // Se eliminan los arcos transitivos
+        for( int k = 0; k < ret.numNodes; ++k ) {
             for( int i = 0; i < ret.numNodes; ++i ) {
-                ret.delArc(i, i);
-            }
-
-            // Se eliminan los arcos transitivos
-            for( int k = 0; k < ret.numNodes; ++k ) {
-                for( int i = 0; i < ret.numNodes; ++i ) {
-                    if( (i != k) && ret.isArc(i,k) ) {
-                        for( int j = 0; j < ret.numNodes; ++j ) {
-                            if( ret.isArc(k,j) ) {
-                                ret.delArc(i, j);
-                            }
+                if( (i != k) && ret.isArc(i,k) ) {
+                    for( int j = 0; j < ret.numNodes; ++j ) {
+                        if( ret.isArc(k,j) ) {
+                            ret.delArc(i, j);
                         }
                     }
                 }
             }
-        } else {
-            
-            ret = ((DiGraphList) grafo.clone());
-
-            // Se calcula la lista sobre la que se va a iterar
-            Arc[] arcos = (Arc[]) ret.alcance().removeAllArcs().toArray();
-            Buscar<Arc> buscador = new Buscar(arcos);
-            for (int k = 0; k < arcos.length; k++) {
-                Arc actual = arcos[k];
-                for (int i = 0; i < arcos.length; i++) {
-                    // AQUI ME QUEDE... BUSCAR LA MANERA DE ITERAR SOBRE LOS ARCOS...
-                }
-            }
-
         }
+        
         return ret;
     }
 
@@ -92,13 +62,13 @@ public class Main {
                 return numNodos;
             } else {
                 throw new ExcepcionFormatoIncorrecto("En la primera linea" +
-                        " hay un error de sintaxis: Se esperaba un numero" +
-                        " (numCursos) y se encontro: " + tokens[0] + "\n");
+                        " hay un error de sintaxis:\nSe esperaba un numero" +
+                        " (numCursos) y se encontró: \"" + tokens[0] + "\"\n");
             }
         } else {
-            throw new ExcepcionFormatoIncorrecto("En la primera linea hay" +
-                    "un error de sintaxis: Se esperaban un elemento (" +
-                    "numCursos), y se encontro:\n\t" + line);
+            throw new ExcepcionFormatoIncorrecto("En la primera linea hay " +
+                    "un error de sintaxis:\nSe esperaban un sólo elemento (" +
+                    "numCursos), y se encontró:\n\t\"" + line + "\"");
         }
     }
 
@@ -187,10 +157,15 @@ public class Main {
                 int numCursosConPrereq = new Integer(tokens[0]).intValue();
                 return numCursosConPrereq;
             } else {
-                throw new ExcepcionFormatoIncorrecto("En la primera linea" +
-                        " hay un error de sintaxis: Se esperaba un numero" +
-                        " (numCursosConPrerequisito) y se encontro: " +
-                        tokens[0] + "\n");
+                throw new ExcepcionFormatoIncorrecto("En la linea " + numLine +
+                        " donde debe decir el número de cursos que tienen" +
+                        " prerequisito, hay un error de sintaxis: Se esperaba" +
+                        " un numero (numCursosConPrerequisito) y se encontro: "+
+                        "\n\t\"" + tokens[0] + "\"\n\nEsto puede ser un mero " +
+                        "error de sintaxis o deberse a que hay más cursos " +
+                        "escritos en el archivo que los indicados en la " +
+                        "primera linea. Por favor, revise el archivo de " +
+                        "entrada (" + fileName + ")");
             }
         } else {
             throw new ExcepcionFormatoIncorrecto("En la primera linea hay" +
@@ -225,17 +200,6 @@ public class Main {
             }
             prerequisitos[k] = line;
         }
-
-        // ESTO HAY QUE BORRARLO
-
-        System.out.println("\nreadArcs: El arreglo de lineas es:\n");
-            System.out.println("{ ");
-            for (int a = 0; a < prerequisitos.length; a++) {
-                System.out.println(prerequisitos[a]);
-            }
-            System.out.println(" }\n");
-
-        // HASTA AQUI!!!
 
         if (k < numCurConPrereq) {
             throw new ExcepcionFormatoIncorrecto("Problema de formato. Se es" +
@@ -281,26 +245,10 @@ public class Main {
                             "con el que se está trabajando...");
                 }
                 for (int i = 2; i < tokens.length; i++) {
-                    // ESTO HAY QUE BORRARLO
-                    System.out.println("\nreadArcs: El arreglo de nombres es:\n");
-                    System.out.print("{ " + names[0]);
-                    for (int a = 1; a < names.length; a++) {
-                        System.out.print(", " + names[a]);
-                    }
-                    System.out.println(" }");
-
-                    System.out.println("\nreadArcs: en la linea "+(k+1)+", en la iteracion "+i+", el arreglo tokens es:\n");
-                    System.out.print("{ " + tokens[0]);
-                    for (int a = 1; a < tokens.length; a++) {
-                        System.out.print(", " + tokens[a]);
-                    }
-                    System.out.println(" }\n");
-                    //HASTA AQUI
                     if (pertenece(tokens[i],names)) {
                         fuente = Buscar.bb(names, tokens[i]);
                         Arc arco = new Arc(fuente,destino);
                         lista.add(arco);
-                        System.out.println("readArcs: Lista de arcos en construccion:\n"+lista.toString()+"\n\n\n");
                     } else {
                         throw new ExcepcionFormatoIncorrecto("Problema con el" +
                             " nodo " + tokens[i] + ". No pertenece al grafo" +
@@ -318,151 +266,230 @@ public class Main {
         return lista;
     }
 
-    public static void write(String fileName) throws IOException {
 
+    /**
+     * Escribe la representacion de este DiGraph en el archivo {@code fileName},
+     * usando el formato siguiente:
+     * <blockquote>
+     * <p><b>Sintaxis</b>:</p>
+     * <p>numNodos numArcos</p>
+     * <p>nodoSrc nodoDst</p>
+     * <p>nodoSrc nodoDst</p>
+     * <p>nodoSrc nodoDst</p>
+     * <p>   .       .   </p>
+     * <p>   .       .   </p>
+     * <p>   .       .   </p>
+     * <p>nodoSrc nodoDst</p>
+     * </blockquote>
+     * <b>pre</b>: {@code fileName} debe existir, ser un archivo, y poder
+     * escribirse.
+     * <b>post</b>: El archivo {@code fileName} contiene la representación de
+     * este DiGraph.
+     * @param fileName Archivo a escribir
+     * @throws IOException En caso de que el archivo {@code fileName} no exista,
+     * no sea un archivo o no se pueda escribir en el.
+     */
+    public static void write(String fileName, String[] nombres, DiGraph digrafo)
+                                                            throws IOException
+    {
+        File output = new File(fileName);
+        if (output.exists()) {
+            output.delete();
+            output.createNewFile();
+        } else {
+            output.createNewFile();
+        }
+
+        // Se crea el flujo de salida de impresión
+        PrintStream out;
+        try {
+            out = new PrintStream(output);
+        } catch (FileNotFoundException fnfe) {
+            throw new ExcepcionArchivoNoSePuedeEscribir("\nEsto no deberia" +
+                    " pasar, contacte al programador...Problema escribiendo" +
+                    " en el archivo \"" + fileName + "\"");
+        }
+
+        try {
+            // Se imprime linea a linea el archivo...
+            for (int i = 0; i < digrafo.numNodes; i++) {
+                List<Integer> pred = digrafo.getPredecesors(i);
+                String[] linea = new String[pred.size()];
+                for (int k = 0; k < linea.length; k++) {
+                    linea[k] = nombres[pred.get(k).intValue()];
+                }
+                Ordenar.mergesortString(linea);
+                out.print(nombres[i]);
+                out.print(" " + linea.length);
+                for (int k = 0; k < linea.length; k++) {
+                    out.print(" " + linea[k]);
+                }
+                out.print("\n");
+            }
+        } catch (NullPointerException npe) {
+            throw new NullPointerException("Error al intentar trabajar con un" +
+                    "digrafo vacío...");
+        }
     }
-
 
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException {
-        
-        //Arreglo donde se guardaran los nombres de los nodos
-        String[] names = null;
-        DiGraph digrafo = null;
 
-        /* Si el archivo no es del formato nombreArchivo.input, lanza la
-         * excepcion.
+        /* Primero se verifica que se haya pasado como parámetro el nombre del
+         * archivo a leer, comprobando la longitud del arreglo de argumentos, y
+         * la existencia de el argumento requerido para el funcionamiento del
+         * programa.
          */
-        if (args[0].matches("[[a-z][A-z][0-9][#$%&*+,-._~]]+?.input")) {
-            throw new ExcepcionFormatoIncorrecto("Problema de formato en el " +
-                    "nombre del archivo:\nSe esperaba un archivo con la " +
-                    "extensión \".input\" y se encontró:\n\n\t\"" + args[0] +
-                    "\"\n\n");
-        }
+        if (1 <= args.length && args[0] != null) {
+            //Arreglo donde se guardaran los nombres de los nodos
+            String[] names = null;
+            DiGraph digrafo = null;
+            String inputFile = args[0];
 
-        /* Si el archivo 'fileName' no existe, o no es un archivo o no se puede
-         * leer, se lanza la respectiva eexcepcion.
-         */
-        if ((new File(args[0])).exists() &&
-            (new File(args[0])).isFile() &&
-            (new File(args[0])).canRead())  {
-            BufferedReader inBuff = null;
-
-            // Se inicializa el buffer de lectura
-            try {
-                inBuff = new BufferedReader(new FileReader(args[0]));
-            } catch (FileNotFoundException fnfe) {
-                throw new ExcepcionArchivoNoSePuedeLeer("Esto no deberia " +
-                        "pasar, contacte al programador...\nProblema Leyendo" +
-                        " el archivo \"" + args[0] + "\" al momento de crear" +
-                        " el buffer lector...\n");
-            }
-            String linea = null;
-
-            // Se lee la primera linea para obtener el numero de nodos...
-            try {
-                 linea = inBuff.readLine();
-            } catch (IOException ioe) {
-                throw new ExcepcionArchivoNoSePuedeLeer("Esto no deberia " +
-                        "pasar, contacte al programador...\nProblema Leyendo " +
-                        "la primera linea del archivo \"" + args[0] + "\"");
-            }
-
-            /* Se le pasa la primera linea a la funcion 'readFirstLine',
-             * encargada de procesarla...
+            /* Si el archivo no es del formato nombreArchivo.input, lanza la
+             * excepcion. Para verificar esto, analizamos la cadena de entrada:
              */
-            int numNodes = readFirstLine(linea);
-
-            /* Ahora se leen las siguientes lineas, correspondientes a los
-             * nombres de los cursos que seran representados como los nodos del
-             * grafo...
-             */
-            names = readNames(inBuff,args[0],numNodes);
-            // ESTO HAY QUE BORRARLO
-            System.out.println("\nEl arreglo de nombres es:\n");
-            System.out.print("{ " + names[0]);
-            for (int k = 1; k < names.length; k++) {
-                System.out.print(", " + names[k]);
-            }
-            System.out.println(" }\n");
-            // HASTA AQUI
-
-            // Se ordena el arreglo de nombres
-            Ordenar.mergesortString(names);
-            int numLinea = names.length + 2;
-            System.out.println("\nEl arreglo de nombres es:\n");
-            System.out.print("{ " + names[0]);
-            for (int k = 1; k < names.length; k++) {
-                System.out.print(", " + names[k]);
-            }
-            System.out.println(" }\n");
-
-            /* Se procede a leer la siguiente linea, la cual contiene el numero
-             * de cursos que tienen prerequisito. Este numero se guarda con el
-             * fin de verificar luego inconsistencias con el numero de nodos.
-             */
-            int numCurConPrereq = readNumConPrereq(inBuff,args[0],numLinea);
-            System.out.println("read: La cantidad de cursos con prerequisito es: " + numCurConPrereq);
-
-            /* Se lee a continuacion las siguientes 'numCurConPrereq' lineas,
-             * con el fin de fabricar una lista de los arcos a agregar en
-             * nuestro digrafo...
-             */
-            List<Arc> arcos = readArcs(inBuff,
-                                       names,
-                                       args[0],
-                                       numLinea,
-                                       numCurConPrereq);
-            System.out.println("read: La lista final es: \n" + arcos.toString());
-
-            /* Ahora, con la información reunida, se procede a construir el
-             * digrafo que va a devolver este método.
-             */
-            if (arcos.size() <= numNodes) {
-                digrafo = new DiGraphList(numNodes);
+            String outputFile = "";
+            if (inputFile.substring(inputFile.length() - 5).equals("input")) {
+                outputFile = inputFile.substring(0, inputFile.length() - 5)
+                        + "output";
             } else {
-                digrafo = new DiGraphMatrix(numNodes);
+                throw new ExcepcionFormatoIncorrecto("Problema de formato en el"
+                        + " nombre del archivo:\nSe esperaba un archivo con la "
+                        + "extensión \".input\" y se encontró:\n\n\t\"" +
+                        inputFile + "\"\n\n");
             }
-            Iterator iterador = arcos.iterator();
-            System.out.println("read: Los elementos obtenidos por el iterador son:");
-            while (iterador.hasNext()) {
-                Arc actual = (Arc)iterador.next();
-                System.out.println(actual.toString());
-                Arc otro = null;
-                otro = digrafo.addArc(actual);
-                if (otro != null && otro.equals(actual)) {
-                    System.out.println("Se agregó el arco " + actual);
-                } else {
-                    System.out.println("NO Se agregó el arco " + actual);
+
+            /* Si el archivo 'fileName' no existe, o no es un archivo o no se
+             * puede leer, se lanza la respectiva eexcepcion.
+             */
+            if ((new File(inputFile)).exists()
+                    && (new File(inputFile)).isFile()
+                    && (new File(inputFile)).canRead()) {
+                BufferedReader inBuff = null;
+
+                // Se inicializa el buffer de lectura
+                try {
+                    inBuff = new BufferedReader(new FileReader(inputFile));
+                } catch (FileNotFoundException fnfe) {
+                    throw new ExcepcionArchivoNoSePuedeLeer("Esto no deberia " +
+                            "pasar, contacte al programador...\nProblema " +
+                            "leyendo el archivo \"" + inputFile + "\" al " +
+                            "momento de crear el buffer lector...\n");
                 }
+                String linea = null;
+
+                // Se lee la primera linea para obtener el numero de nodos...
+                try {
+                    linea = inBuff.readLine();
+                } catch (IOException ioe) {
+                    throw new ExcepcionArchivoNoSePuedeLeer("Esto no deberia "
+                            + "pasar, contacte al programador...\nProblema " +
+                            "leyendo la primera linea del archivo \"" +
+                            inputFile + "\"");
+                }
+
+                /* Se le pasa la primera linea a la funcion 'readFirstLine',
+                 * encargada de procesarla...
+                 */
+                int numNodes = readFirstLine(linea);
+
+                /* Ahora se leen las siguientes lineas, correspondientes a los
+                 * nombres de los cursos que seran representados como los nodos
+                 * del grafo...
+                 */
+                names = readNames(inBuff, inputFile, numNodes);
+
+                // Se ordena el arreglo de nombres
+                Ordenar.mergesortString(names);
+                int numLinea = names.length + 2;
+
+                /* Se procede a leer la siguiente linea, la cual contiene el
+                 * numero de cursos que tienen prerequisito. Este numero se
+                 * guarda con el fin de verificar luego inconsistencias con el
+                 * numero de nodos.
+                 */
+                int numCurConPrereq = readNumConPrereq (inBuff,
+                                                        inputFile,
+                                                        numLinea);
+
+                /* Se lee a continuacion las siguientes 'numCurConPrereq'
+                 * lineas, con el fin de fabricar una lista de los arcos a
+                 * agregar en nuestro digrafo...
+                 */
+                List<Arc> arcos = readArcs(inBuff,
+                        names,
+                        inputFile,
+                        numLinea,
+                        numCurConPrereq);
+
+                /* Ahora, con la información reunida, se procede a construir el
+                 * digrafo que va a devolver este método.
+                 */
+                if (numNodes < arcos.size()) {
+                    digrafo = new DiGraphMatrix(numNodes);
+                } else {
+                    digrafo = new DiGraphList(numNodes);
+                }
+
+                // Ahora se agregan los arcos al digrafo...
+                Iterator iterador = arcos.iterator();
+                while (iterador.hasNext()) {
+                    Arc actual = (Arc) iterador.next();
+                    digrafo.addArc(actual);
+                }
+                // YA ESTÁ CONSTRUIDO NUESTRO DIGRAFO!!!
+
+            } else if (!(new File(inputFile)).exists()) {
+                throw new ExcepcionArchivoNoExiste("Problema al leer el archivo"
+                        + " \"" + inputFile + "\": EL ARCHIVO NO EXISTE!!!");
+            } else if (!(new File(inputFile)).isFile()) {
+                throw new ExcepcionNoEsArchivo("Problema al leer el archivo \""
+                        + inputFile + "\": NO ES UN ARCHIVO!!!");
+            } else if (!(new File(inputFile)).canRead()) {
+                throw new ExcepcionArchivoNoSePuedeLeer("Problema al leer el ar"
+                        + "chivo \"" + inputFile + "\": ESTE ARCHIVO NO SE "
+                        + "PUEDE LEER!!!");
             }
-            System.out.println("read: El digrafo a devolver por el read es:\n"+digrafo.toString());
-        } else if (!(new File(args[0])).exists()) {
-            throw new ExcepcionArchivoNoExiste("Problema al leer el archivo " +
-                    "\"" + args[0] +"\": EL ARCHIVO NO EXISTE!!!");
-        } else if (!(new File(args[0])).isFile()) {
-            throw new ExcepcionNoEsArchivo("Problema al leer el archivo \"" +
-                    args[0] +"\": NO ES UN ARCHIVO!!!");
-        } else if (!(new File(args[0])).canRead()) {
-            throw new ExcepcionArchivoNoSePuedeLeer("Problema al leer el ar" +
-                    "chivo \"" + args[0] +"\": ESTE ARCHIVO NO SE PUEDE" +
-                    " LEER!!!");
-        }
+            // FIN DEL PROCESO DE LECTURA
 
-        // FIN DEL PROCESO DE LECTURA
+            /* Se calcula el digrafo minimo; digrafo en el cual se eliminan
+             * todos los arcos transitivos y reflexivos, quedando cada nodo
+             * incidido sólo por sus predecesores inmediatos.
+             */
+            DiGraph result = minimo(digrafo);
 
-        System.out.println("\nmain: El arreglo de nombres es:\n");
-        System.out.print("{ " + names[0]);
-        for (int a = 1; a < names.length; a++) {
-            System.out.print(", " + names[a]);
+            /* Ahora se procede a escribir el digrafo calculado en el archivo de
+             * salida.
+             */
+            write(outputFile,names,result);
+            //Fin del programa...
+
+        } else {
+            System.err.println("\nSintaxis:\n\n\tjava Main nombre_del_" +
+                    "archivo_de_entrada.input\n\n\t\tNuestro programa " +
+                    "generará un archivo de igual nombre y extensión " +
+                    "\".output\" en el\n\tcual estará escrito el resultado " +
+                    "de los cálculos de acuerdo al formato establecido en " +
+                    "la\n\tcátedra.\n\n\nFormato De Entrada:\n\n\nnumCursos\n" +
+                    "curso(1)\ncurso(2)\ncurso(3)\n.\n.\n.\ncurso(numCursos)" +
+                    "\nnumCursosC/Prereq\ncursoC/Prereq(1) numPrereq " +
+                    "prereq(1) prereq(2) prereq(3) . . . . prereq(numPrereq)\n"+
+                    "cursoC/Prereq(2) numPrereq prereq(1) prereq(2) " +
+                    "prereq(3) . . . . prereq(numPrereq)\ncursoC/Prereq(3) " +
+                    "numPrereq prereq(1) prereq(2) prereq(3) . . . . " +
+                    "prereq(numPrereq)\n.\n.\n.\n" +
+                    "cursoC/Prereq(numCursosC/Prereq) numPrereq prereq(1) " +
+                    "prereq(2) prereq(3) . . . . prereq(numPrereq)\n\n\n" +
+                    "Formato De Salida:\n\n\ncurso(1) numPrereq prereq(1) " +
+                    "prereq(2) prereq(3) . . . . prereq(numPRereq)\ncurso(2) " +
+                    "numPrereq prereq(1) prereq(2) prereq(3) . . . . " +
+                    "prereq(numPRereq)\ncurso(3) numPrereq prereq(1) " +
+                    "prereq(2) prereq(3) . . . . prereq(numPRereq)" +
+                    "\n.\n.\n.\n.");
         }
-        System.out.println(" }");
-        DiGraph result = minimo(digrafo);
-        System.out.print("\nEl grafo minimo es:\n");
-        System.out.println(result.toString()+"\n\n");
-        //result.write(args[1]);
     }
 }
