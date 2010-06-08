@@ -5,18 +5,35 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.PrintStream;
 import java.util.Iterator;
+
 /**
- *
- * @author victor
+ * Clase principal que se encarga de calcular los prerequisitos inmediatos de un
+ * conjunto de cursos junto con sus prerequisitos representando este problema
+ * mediante un DiGraph. La entrada y salida cumple con el formato especificado
+ * en la cátedra.
+ * @author Victor De Ponte, 05-38087
+ * @author Karina Valera, 06-40414
+ * @version 2.0
+ * @since 1.6
  */
 public class Main {
     
-    private static DiGraph minimo (DiGraph grafo) {
+    /**
+     * Se encarga de calcular el DiGraph sin arcos transitivos asociado al
+     * {@code DiGraph digrafo}.
+     * <b>Pre</b>: true;
+     * <b>Post</b>: el digrafo resultante es el mismo que el de entrada sin
+     * ninguno de sus arcos transitivos.
+     * @param digrafo {@code DiGraph} sobre el cual se calculará el digrafo
+     * minimo.
+     * @return El {@code DiGraph} minimo  asociado al digrafo de entrada.
+     */
+    private static DiGraph minimo (DiGraph digrafo) {
         DiGraph ret = null;
-        if (grafo.numNodes < grafo.numArcs) {
-            ret = (DiGraphMatrix) grafo.clone();
+        if (digrafo.numNodes < digrafo.numArcs) {
+            ret = (DiGraphMatrix) digrafo.clone();
         } else {
-            ret = (DiGraphList) grafo.clone();
+            ret = (DiGraphList) digrafo.clone();
         }
 
         // Se calcula el alcance del grafo para usarlo como punto de partida
@@ -43,6 +60,15 @@ public class Main {
         return ret;
     }
 
+    /**
+     * Determina si el {@code String elem} pertenece al arreglo {@code arr}
+     * <b>Pre</b>: true
+     * <b>Post</b>: el resultado es true si elem esta en arr. false en caso
+     * contrario
+     * @param elem Elemento a buscar
+     * @param arr Arreglo donde se buscara el elemento elem
+     * @return true si {@code elem} esta en {@code arr}. false en caso contrario
+     */
     private static boolean pertenece(String elem, String[] arr) {
         boolean pertenece = false;
         int pos = Buscar.bb(arr, elem);
@@ -52,6 +78,18 @@ public class Main {
         return pertenece;
     }
 
+    /**
+     * Se encarga de interpretar la primera linea del archivo de entrada basado
+     * en el formato establecido por la cátedra.
+     * <b>Pre</b>: {@code line} debe contener un numero, el cual esta en la
+     * primera linea del archivo de entrada
+     * <b>Post</b>: devuelve el número contenido en la linea {@code line} o
+     * arroja una excepcion.
+     * @param line String a verificar
+     * @return un numero el cual esta contenido en la linea {@code line}
+     * @throws ExcepcionFormatoIncorrecto En caso de que el {@code Strin line}
+     * tenga varios elementos o no sea un numero
+     */
     private static int readFirstLine (String line)
                                         throws ExcepcionFormatoIncorrecto
     {
@@ -72,13 +110,32 @@ public class Main {
         }
     }
 
+    /**
+     * Se encarga de leer la segunda sección del archivo de entrada, a travez de
+     * un  {@code BufferedReader} ya abierto y en la linea apropiada.
+     * <b>Pre</b>: el buffer de entrada debe estar en la segunda linea y a
+     * partir de esta debe haber {@code numNodes} lineas que contienen nombres
+     * de cursos.
+     * <b>Post</b>: El resultado es un arreglo que contiene los nombres
+     * mencionados en <b>Pre</b>.
+     * @param inBuff BufferReader de entrada. Debe estar en la segunda linea
+     * @param fileName Nombre del archivo que se esta leyendo
+     * @param numNodes Número de lineas a leerse por éste método
+     * @return Un arreglo que contiene los nombres leidos a travez de
+     * {@code inBuff}
+     * @throws ExcepcionArchivoNoSePuedeLeer En caso de que {@code fileNAme} no
+     * se pueda leer
+     * @throws ExcepcionFormatoIncorrecto En caso de que haya algun error de
+     * formato leida por el buffer
+     * @throws ExcepcionInconsistenciaNumeroDeNodos En caso de que haya menos
+     * nodos de los indicados por {@code numNodes}
+     */
     private static String[] readNames (BufferedReader inBuff,
                                        String         fileName,
                                        int            numNodes)
             throws ExcepcionArchivoNoSePuedeLeer,
                    ExcepcionFormatoIncorrecto,
-                   ExcepcionInconsistenciaNumeroDeNodos,
-                   ExcepcionInconsistenciaNumeroDeArcos
+                   ExcepcionInconsistenciaNumeroDeNodos
     {
         String[] tokens;
         String[] nombres = new String[numNodes];
@@ -137,6 +194,18 @@ public class Main {
         return nombres;
     }
 
+    /**
+     * Se encarga de leer la tercera sección del archivo de entrada, la sección
+     * que contiene el numero de cursos con prerequisito, a travez del mismo
+     * buffer abierto anteriormente por otros métodos.
+     * @param inBuff BufferReader de entrada. Debe haber sido ya inicializado y
+     * manipulado hasta estar en la linea adecuada.
+     * @param fileName
+     * @param numLine
+     * @return
+     * @throws ExcepcionFormatoIncorrecto
+     * @throws ExcepcionArchivoNoSePuedeLeer
+     */
     private static int readNumConPrereq (BufferedReader   inBuff,
                                          String           fileName,
                                          int              numLine)
@@ -269,25 +338,14 @@ public class Main {
 
     /**
      * Escribe la representacion de este DiGraph en el archivo {@code fileName},
-     * usando el formato siguiente:
-     * <blockquote>
-     * <p><b>Sintaxis</b>:</p>
-     * <p>numNodos numArcos</p>
-     * <p>nodoSrc nodoDst</p>
-     * <p>nodoSrc nodoDst</p>
-     * <p>nodoSrc nodoDst</p>
-     * <p>   .       .   </p>
-     * <p>   .       .   </p>
-     * <p>   .       .   </p>
-     * <p>nodoSrc nodoDst</p>
-     * </blockquote>
-     * <b>pre</b>: {@code fileName} debe existir, ser un archivo, y poder
-     * escribirse.
+     * usando el formato determinado por la cátedra.
+     * <b>pre</b>: {@code nombres} debe contener los nombres de los nodos del
+     * DiGraph digrafo, ordenados lexicográficamente.
      * <b>post</b>: El archivo {@code fileName} contiene la representación de
-     * este DiGraph.
+     * este DiGraph según el formato determinado por la cátedra.
      * @param fileName Archivo a escribir
-     * @throws IOException En caso de que el archivo {@code fileName} no exista,
-     * no sea un archivo o no se pueda escribir en el.
+     * @throws IOException En caso de que el archivo {@code fileName} no se
+     * pueda crear, o no se pueda escribir.
      */
     public static void write(String fileName, String[] nombres, DiGraph digrafo)
                                                             throws IOException

@@ -1,4 +1,5 @@
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * Representa el objeto Lista(E), una lista de elementos del tipo E. implementa
@@ -352,7 +353,13 @@ public class Lista<E> implements List<E>{
         return s;
     }
 
-    //FALTA JAVADOC
+    /**
+     * Método que construye un nuevo iterador sobre {@code this Lista}
+     * <b>Pre</b>: true;
+     * <b>Post</b>: Se genera un nuevo {@code Iterator} definido sobre
+     * {@code this Lista}
+     * @return Un Iterador sobre {@code this Lista}.
+     */
     public Iterator iterator() {
         return new GeneradorDeElementos(this);
     }
@@ -467,30 +474,78 @@ public class Lista<E> implements List<E>{
         }
     }
 
-    // FALTA JAVADOC
+    /**
+     * Clase interna que implementa la interfaz Iterator para esta Lista
+     * @param <E> El tipo sobre el cual está definida esta Lista
+     */
     private class GeneradorDeElementos <E> implements Iterator {
-        
+
+        // El siguiente elemento a devolver
         private Nodo prox;
-        
+
+        /**
+         * Construye un nuevo {@code GeneradorDeElementos} definido sobre
+         * {@code this Lista}
+         * <b>Pre</b>: true;
+         * <b>Post</b>: Se genera un nuevo {@code GeneradorDeElementos} definido
+         * sobre la {@code Lista lista}
+         * @param lista la {@code Lista} sobre la cual se construirá el nuevo
+         * {@code GeneradorDeElementos}
+         */
         public GeneradorDeElementos(Lista<E> lista) {
-            prox = lista.head;
+            if (lista != null) {
+                this.prox = lista.head;
+            } else {
+                this.prox = null;
+            }
         }
 
+        /**
+         * Determina si hay un proximo elemento a devolver por
+         * {@code this GeneradorDeElementos}
+         * <b>Pre</b>: true;
+         * <b>Post</b>: El resultado es true si se puede devolver un nuevo
+         * elemento, false en caso contrario.
+         * @return true si se puede devolver un nuevo elemento, false en
+         * caso contrario.
+         */
         public boolean hasNext() {
-            return ((this.prox.next != null) &&
-                    this.prox.next.elem != null);
+            return ((this.prox != null) &&
+                    (this.prox.next != null) &&
+                    (this.prox.next.elem != null));
         }
 
-        public Object next() {
-            Object siguiente = this.prox.next.elem;
-            this.prox = this.prox.next;
-            return siguiente;
+        /**
+         * Devuelve el siguiente elemento de {@code this GeneradorDeElementos}
+         * <b>Pre</b>: {@code this.hasNext()}
+         * <b>Post</b>: si {@code this.hasNext()}, entonces se devuelve el
+         * siguiente elemento de {@code this GeneradorDeElementos}. Si no, se
+         * arroja la excepción {@code NoSuchElementException}
+         * @return El siguiente elemento a devolver por
+         * {@code this GeneradorDeElementos}
+         * @throws NoSuchElementException En caso de que
+         * {@code !this.hasNext()}
+         */
+        public E next() throws NoSuchElementException {
+            if (this.prox != null &&
+                this.prox.next != null &&
+                this.prox.next.elem != null) {
+                E siguiente = (E)this.prox.next.elem;
+                this.prox = this.prox.next;
+                return siguiente;
+            } else {
+                throw new NoSuchElementException("Esta Lista no contiene más " +
+                        "elementos...");
+            }
         }
 
+        /**
+         * Este método no se implementara en esta clase por el momento
+         */
         public void remove() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Método no implementado" +
+                    " todavía");
         }
-        
     }
 
     // Funciones auxiliares:

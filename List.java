@@ -133,5 +133,10 @@ public interface List <E> {
     @Override
     public String toString();
 
+    /**
+     * Devuelve un iterador sobre esta {@code List}
+     *
+     * @return Un iterador sobre esta {@code List}
+     */
     public Iterator iterator();
 }
