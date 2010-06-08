@@ -1,15 +1,14 @@
 
 import java.util.Iterator;
 
-  /**
-   * List es una interfaz que determina los metodos basicos que debe tener una
-   * lista independiente de su implementacion interna
-   * 
-   * @author Les profs
-   * @version 1.0
-   * @since 1.6
-   */
-
+/**
+ * List es una interfaz que determina los metodos basicos que debe tener una
+ * lista independiente de su implementacion interna
+ * 
+ * @author Les profs
+ * @version 1.0
+ * @since 1.6
+ */
 public interface List <E> {
  
     /**

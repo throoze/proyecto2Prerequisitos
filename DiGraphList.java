@@ -29,6 +29,11 @@ public class DiGraphList extends DiGraph {
 
     // Constructores:
 
+    /**
+     * Construye un nuevo DiGraphList vacio
+     * <b>Pre</b>: true
+     * <b>Post</b>: Se construyó un nuevo DiGraphList vacio
+     */
     public DiGraphList() {
         this.inArcs = new List[0];
         this.outArcs = new List[0];
@@ -81,7 +86,7 @@ public class DiGraphList extends DiGraph {
         this.read(fileName);
     }
 
-   /**
+    /**
      * Crea un DiGraphList a partir del DiGraph g
      * <b>Pre</b>: {@code true;}
      * <b>Post</b>: {@code this.equals(g)}
@@ -136,7 +141,7 @@ public class DiGraphList extends DiGraph {
         }
     }
 
-   /**
+    /**
      * Agrega un arco a este DiGraphList.
      * <b>Pre</b>: Los nodos src y dst deben encontrase en el DigraphList y no
      * debe existir un arco entre ellos.
@@ -356,7 +361,7 @@ public class DiGraphList extends DiGraph {
         }
     }
 
-   /**
+    /**
      * Determina si el DiGraph g es igual a este DiGraphList.
      * <b>Pre</b>: debe existir un DigraphList y un Digraph g.
      * <b>Post</b>: Se obtendra true en caso de que los grafos relacionados sean

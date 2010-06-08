@@ -15,6 +15,7 @@ import java.util.Iterator;
  * @author Karina Valera, 06-40414
  * @version 2.0
  * @since 1.6
+ * @see DiGraph, DiGraphMatrix, DiGraphList, Arc, List, Lista
  */
 public class Main {
     
@@ -198,13 +199,24 @@ public class Main {
      * Se encarga de leer la tercera sección del archivo de entrada, la sección
      * que contiene el numero de cursos con prerequisito, a travez del mismo
      * buffer abierto anteriormente por otros métodos.
+     * <b>Pre</b>: {@code inBuff} debe haber sido inicializado y manipulado
+     * hasta estar en la linea adecuada, {@code fileName} debe existir, ser un
+     * archivo y ser legible, y cumplir con el formato establecido en la cátedra
+     * y {@code numLine} debe ser el numero de la linea a leer donde se
+     * encuentre el numero buscado.
+     * <b>Post</b>: Se devolvera el numero de cursos con prerequisito o se
+     * lanzará la excepción correspondiente en caso de haber uno de los errores
+     * ya mencionados.
      * @param inBuff BufferReader de entrada. Debe haber sido ya inicializado y
      * manipulado hasta estar en la linea adecuada.
-     * @param fileName
-     * @param numLine
-     * @return
-     * @throws ExcepcionFormatoIncorrecto
-     * @throws ExcepcionArchivoNoSePuedeLeer
+     * @param fileName Nombre del archivo leido por {@code inBuff}
+     * @param numLine Numero de la linea en la cual empieza la lectura de esta
+     * sección
+     * @return el numero de cursos que tienen prerequisitos
+     * @throws ExcepcionFormatoIncorrecto en caso de que se encuentre mas de un
+     * elemento, o algo distinto de un número.
+     * @throws ExcepcionArchivoNoSePuedeLeer En caso de que el ar.chivo
+     * {@code fileName} no se pueda leer por algun error de entrada/salida.
      */
     private static int readNumConPrereq (BufferedReader   inBuff,
                                          String           fileName,
@@ -243,6 +255,36 @@ public class Main {
         }
     }
 
+    /**
+     * Se encarga de leer la última sección del archivo de entrada, en la cual
+     * se representan los arcos que pertenecerán a nuestro DiGraph.
+     * <b>Pre</b>: El buffer de entrada ({@code inBuff}) debe haberse leido
+     * hasta la linea adecuada, en la cual compienza la sección a ser leída;
+     * {@code names} debe contener los nombres de los nodos que compondrán el
+     * DiGraph a construir ordenados lexicográficamente, {@code fileName} debe
+     * ser el nombre del archivo leido, {@code numLinea} debe ser la linea de
+     * {@code fileName} en la cual se empieza a leer y {@code numCurConPrereq}
+     * debe ser la cantidad de lineas que se espera leer.
+     * <b>Post</b>:Se devolverá una lista con cada uno de los arcos leidos en el
+     * proceso.
+     * @param inBuff {@code BufferedReader} de entrada sobre el cual se
+     * efectuará la lectura
+     * @param names Arreglo que contiene los nombres de los nodos con los cuales
+     * se estará trabajando, ordenado lexicográficamente.
+     * @param fileName Nombre del archivo que está siendo leído
+     * @param numLinea Número de linea de {@code fileName} en la cual se
+     * comienza a leer en este método
+     * @param numCurConPrereq Cantidad de lineas que se espera leer
+     * @return Una {@code List(Arc)} que contendrá todos los arcos a ser
+     * agregados a nuestro DiGraph
+     * @throws ExcepcionArchivoNoSePuedeLeer En caso de que ocurra un error
+     * leyendo el BufferedReader
+     * @throws ExcepcionFormatoIncorrecto En caso de que el formato encontrado
+     * no concuerde con el establecido por la cátedra
+     * @throws ExcepcionInconsistenciaNumeroDeNodos En caso de que se utilice un
+     * nodo que no pertenezca al arreglo de nombres, y por ende, al DiGraph que
+     * se está construyendo.
+     */
     private static List<Arc> readArcs(BufferedReader    inBuff,
                                       String[]          names,
                                       String            fileName,
@@ -251,8 +293,7 @@ public class Main {
              throws
                     ExcepcionArchivoNoSePuedeLeer,
                     ExcepcionFormatoIncorrecto,
-                    ExcepcionInconsistenciaNumeroDeNodos,
-                    ExcepcionInconsistenciaNumeroDeArcos
+                    ExcepcionInconsistenciaNumeroDeNodos
     {
         String line = "";
         String[] prerequisitos = new String[numCurConPrereq];
@@ -339,9 +380,9 @@ public class Main {
     /**
      * Escribe la representacion de este DiGraph en el archivo {@code fileName},
      * usando el formato determinado por la cátedra.
-     * <b>pre</b>: {@code nombres} debe contener los nombres de los nodos del
+     * <b>Pre</b>: {@code nombres} debe contener los nombres de los nodos del
      * DiGraph digrafo, ordenados lexicográficamente.
-     * <b>post</b>: El archivo {@code fileName} contiene la representación de
+     * <b>Post</b>: El archivo {@code fileName} contiene la representación de
      * este DiGraph según el formato determinado por la cátedra.
      * @param fileName Archivo a escribir
      * @throws IOException En caso de que el archivo {@code fileName} no se
@@ -392,7 +433,28 @@ public class Main {
 
 
     /**
-     * @param args the command line arguments
+     * Método principal que se encarga de hacer las llamadas a los demás métodos
+     * para leer el archivo de origen, hacer los cálculos, y luego escribir el
+     * resultado en un nuevo archivo. Todo el proceso está comentado.
+     * <b>Pre</b>:Se debe pasar al menos un parámetro. De todos los parámetros
+     * pasados, sólo se tomará en cuenta el primero, el cual representa el
+     * nombre o la ruta (absoluta o relativa) del archivo a ser leido, el cuál
+     * deberá tener extensión '.input' y contener la representacion del DiGraph
+     * aa procesar según el formato de entrada establecido por la cátedra.
+     * <b>Post</b>: Se generará un nuevo archivo con el mismo nombre que el
+     * archivo de entrada, pero con extensión '.output', el cual contendrá la
+     * representación del DiGraph calculado de acuerdo al formato de salida
+     * establecido por la cátedra. En caso de que ocurra algun error de
+     * entrada/salida, se lanzará la excepción adecuada. En caso de ocurrir un
+     * error de sintaxis al invocar el programa, éste sólo devolverá un mensaje
+     * y terminará.
+     * @param args Arreglo con los argumentos pasados al programa.
+     * @throws IOException En caso de que El archivo de entrada no exista, o no
+     * sea un archivo, o no se pueda leer, o haya una inconsistencia en el
+     * número de nodos usados en el archivo de entrada o haya un error de
+     * formato en el archivo de entrada. Cada tipo de excepción lanzada por éste
+     * programa tiene su nombre y mensaje explicito y amigable, y todas heredan
+     * de {@code IOException}
      */
     public static void main(String[] args) throws IOException {
 

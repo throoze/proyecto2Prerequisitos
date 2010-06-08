@@ -4,7 +4,7 @@
 shopt -s extglob
 
 echo "Compilando..."
-javac *.java
+javac *.java 2> /dev/null
 echo "Hecho!!!"
 echo "Creando archivos temporales..."
 for i in $(ls repo/*.input)
@@ -15,7 +15,12 @@ done
 echo "Realizando los calculos"
 for i in $(ls *.input)
 do
-    java Main $i
+    if (java Main $i 2> /dev/null)
+    then
+        echo "Corrida caso $i [OK]"
+    else
+        echo "Corrida caso $i [OK]"
+    fi
 done
 
 echo -e "\n\n\nIniciando las comparaciones:\n"

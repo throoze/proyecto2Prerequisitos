@@ -952,22 +952,4 @@ public class DiGraphMatrix extends DiGraph {
                     nArc + " arco(s)");
         }
     }
-
-    /**
-     * Copia la matriz {@code src} en la matriz {@code dst}
-     * <b>Pre</b>: Ambas matrices deben tener el mismo tamaño.
-     * <b>Pre</b>: la matriz {@code dst} será igual a la matrix {@code src}.
-     *
-     * @param src matriz origen de la copia
-     * @param dst matriz destino de la copia
-     */
-    private void copy_matrix(boolean src[][], boolean dst[][]) {
-        if (src.length == dst.length && src[0].length == dst[0].length) {
-            for (int i = 0; i < src.length; ++i) {
-                for (int j = 0; j < src[0].length; ++j) {
-                    dst[i][j] = src[i][j];
-                }
-            }
-        }
-    }
 }
