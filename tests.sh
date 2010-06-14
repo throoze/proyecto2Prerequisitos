@@ -39,4 +39,3 @@ rm *.input
 rm *.output
 rm *.class
 echo "Tareas realizadas!!! Hasta luego"
-

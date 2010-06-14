@@ -20,10 +20,12 @@ import java.io.PrintStream;
 public class DiGraphList extends DiGraph {
 
     // Modelo de representación:
-    // arreglo de lista de los arcos, inArc[i] contine la lista
+    
+    // Arreglo de lista de los arcos, inArc[i] contine la lista
     // de los arcos que cuyo destino es el nodo i
     private List<Arc> inArcs[];
-    // arreglo de lista de los arcos, outArc[i] contine la lista
+    
+    // Arreglo de lista de los arcos, outArc[i] contine la lista
     // de los arcos que cuyo fuente es el nodo i
     private List<Arc> outArcs[];
 
@@ -276,9 +278,13 @@ public class DiGraphList extends DiGraph {
                 arcosDeEntrada[k] = this.inArcs[k];
                 arcosDeSalida[k] = this.outArcs[k];
             }
+            for (int k = this.numNodes; k < this.numNodes + num; k++) {
+                arcosDeEntrada[k] = new Lista();
+                arcosDeSalida[k] = new Lista();
+            }
             this.numNodes = this.numNodes + num;
-            this.inArcs = arcosDeEntrada;
-            this.outArcs = arcosDeSalida;
+            this.inArcs = (List<Arc>[])arcosDeEntrada;
+            this.outArcs = (List<Arc>[])arcosDeSalida;
         }
     }
 
@@ -375,9 +381,9 @@ public class DiGraphList extends DiGraph {
         if (this.numArcs == g.numArcs && this.numNodes == g.numNodes) {
             boolean out = true;
             for (int i = 0; i < this.numNodes && out; i++) {
-                Arc[] arrArcs = (Arc[])this.outArcs[i].toArray();
+                Object[] arrArcs = this.outArcs[i].toArray();
                 for (int j = 0; j < arrArcs.length; j++) {
-                    out = g.isArc(i, arrArcs[j].getDst());
+                    out = g.isArc(i, ((Arc)arrArcs[j]).getDst());
                 }
             }
             return out;
@@ -547,11 +553,7 @@ public class DiGraphList extends DiGraph {
         boolean es = false;
         int src = arco.getSrc();
         int dst = arco.getDst();
-        if ((0 <= src && src < this.numNodes) &&
-            (0 <= dst && dst < this.numNodes)) {
-            es = (this.outArcs[src].contains(arco) &&
-                  this.inArcs[src].contains(arco));
-        }
+        es = this.isArc(src, dst);
         return es;
     }
 
@@ -685,9 +687,9 @@ public class DiGraphList extends DiGraph {
     public List<Arc> removeAllArcs() {
         List<Arc> lista = new Lista();
         for (int i = 0; i < this.numNodes; i++) {
-            Arc[] arrArcs = (Arc[])this.outArcs[i].toArray();
+            Object[] arrArcs = this.outArcs[i].toArray();
             for (int j = 0; j < arrArcs.length; j++) {
-                lista.add(arrArcs[j]);
+                lista.add((Arc)arrArcs[j]);
             }
         }
         this.inArcs = new List[this.numNodes];
@@ -711,9 +713,13 @@ public class DiGraphList extends DiGraph {
         if ((0 <= nodeIniId && nodeIniId < this.numNodes) &&
             (0 <= nodeFinId && nodeFinId < this.numNodes)) {
             if (this.isArc(nodeIniId, nodeFinId)) {
-                this.delArc(nodeIniId, nodeFinId);
-                this.addArc(nodeFinId, nodeIniId);
-                return true;
+                if (!this.isArc(nodeFinId, nodeIniId)) {
+                    this.delArc(nodeIniId, nodeFinId);
+                    this.addArc(nodeFinId, nodeIniId);
+                    return true;
+                } else {
+                    return false;
+                }
             } else {
                 return false;
             }
@@ -724,7 +730,7 @@ public class DiGraphList extends DiGraph {
 
     /**
      * Invierte todos los arcos del DiGraphList.
-     * <b>Pre</b>: Debe existir un DipraphList.
+     * <b>Pre</b>: Debe existir un DiGraphList.
      * <b>Post</b>: Se obtiene true en caso de que se hayan invertido todos los
      * arcos y false en caso contrario.
      *
@@ -733,11 +739,16 @@ public class DiGraphList extends DiGraph {
      * debe quedar sin alteraciones.
      */
     public boolean reverseArcs() {
-        List<Arc> arcos = this.removeAllArcs();
-        while (!arcos.isEmpty()) {
-            Arc arco = arcos.remove(0);
-            this.addArc(arco.getDst(), arco.getSrc());
+        DiGraphList aux = new DiGraphList(this.numNodes);
+        for (int i = 0; i < this.numNodes; i++) {
+            for (int j = 0; j < this.numNodes; j++) {
+                if (this.isArc(i, j)) {
+                    aux.addArc(j, i);
+                }
+            }
         }
+        this.inArcs = aux.inArcs;
+        this.outArcs = aux.outArcs;
         return true;
     }
 
@@ -783,43 +794,34 @@ public class DiGraphList extends DiGraph {
      * no sea un archivo o no se pueda escribir en el.
      */
     public void write(String fileName) throws IOException {
-        if ((new File(fileName)).exists() &&
-            (new File(fileName)).isFile() &&
-            (new File(fileName)).canWrite())
+        File salida = new File(fileName);
+        if (!salida.exists() || !salida.isFile() || !salida.canWrite())
         {
-            PrintStream out;
-            try {
-                out = new PrintStream(fileName);
-                out.println(this.numNodes + " " + this.numArcs);
-                for (int i = 0; i < this.numNodes; i++) {
-                    /* A partir de aqui es diferente entre DiGraphList y
-                     * DiGraphMatrix
-                     */
-                    Object[] arrArcs = this.outArcs[i].toArray();
-                    for (int j = 0; j < arrArcs.length; j++) {
-                        out.println(i + " " + ((Arc)arrArcs[j]).getDst());
-                    }
-                    // Fin de las diferencias
+            salida.delete();
+            salida.createNewFile();
+        }
+        salida.setWritable(true);
+        PrintStream out;
+        try {
+            out = new PrintStream(salida);
+            out.println(this.numNodes + " " + this.numArcs);
+            for (int i = 0; i < this.numNodes; i++) {
+                /* A partir de aqui es diferente entre DiGraphList y
+                 * DiGraphMatrix
+                 */
+                Object[] arrArcs = this.outArcs[i].toArray();
+                for (int j = 0; j < arrArcs.length; j++) {
+                    out.println(i + " " + ((Arc)arrArcs[j]).getDst());
                 }
-            } catch (FileNotFoundException fnfe) {
-                System.out.println("Esto no deberia pasar, contacte" +
-                        " al programador...");
-                System.out.println("MENSAJE:" + fnfe.getMessage() + "\n" +
-                        "CAUSA:" + fnfe.getCause().toString() + "\n");
-                throw new ExcepcionArchivoNoSePuedeEscribir("\nProblema" +
-                        " escribiendo en el archivo \"" + fileName + "\"");
+                // Fin de las diferencias
             }
-        } else if (!(new File(fileName)).exists()) {
-            throw new ExcepcionArchivoNoExiste("\nProblema al leer el" +
-                    " archivo \"" + fileName +"\":\n\tEL ARCHIVO NO" +
-                    " EXISTE!!!\n");
-        } else if (!(new File(fileName)).isFile()) {
-            throw new ExcepcionNoEsArchivo("\nProblema al leer el" +
-                    " archivo \"" + fileName +"\":\n\tNO ES UN ARCHIVO!!!\n");
-        } else if (!(new File(fileName)).canWrite()) {
-            throw new ExcepcionArchivoNoSePuedeEscribir("\nProblema al leer" +
-                    " el archivo \"" + fileName +"\":\n\tESTE ARCHIVO NO SE" +
-                    " PUEDE ESCRIBIR!!!\n");
+        } catch (FileNotFoundException fnfe) {
+            System.out.println("Esto no deberia pasar, contacte" +
+                    " al programador...");
+            System.out.println("MENSAJE:" + fnfe.getMessage() + "\n" +
+                    "CAUSA:" + fnfe.getCause().toString() + "\n");
+            throw new ExcepcionArchivoNoSePuedeEscribir("\nProblema" +
+                    " escribiendo en el archivo \"" + fileName + "\"");
         }
     }
 

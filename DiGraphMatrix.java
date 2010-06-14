@@ -257,14 +257,23 @@ public class DiGraphMatrix extends DiGraph {
     @Override
     public void addNodes(int num) {
         if (0 < num) {
-            DiGraphMatrix nuevo = new DiGraphMatrix(this.numNodes + num);
+            boolean[][] nueva = new boolean[this.numNodes + num]
+                                           [this.numNodes + num];
             for (int i = 0; i < this.numNodes; i++) {
                 for (int j = 0; j < this.numNodes; j++) {
                     if (this.matrix[i][j]) {
-                        nuevo.matrix[i][j] = true;
+                        nueva[i][j] = true;
+                    } else {
+                        nueva[i][j] = false;
                     }
                 }
             }
+            for (int i = this.numNodes; i < this.numNodes + num; i++) {
+                for (int j = this.numNodes; j < this.numNodes + num; j++) {
+                    nueva[i][j] = false;
+                }
+            }
+            this.matrix = nueva;
             this.numNodes += num;
         }
     }
@@ -730,9 +739,13 @@ public class DiGraphMatrix extends DiGraph {
         if((0 <= nodeIniId && nodeIniId < this.numNodes) &&
             (0 <= nodeFinId && nodeFinId < this.numNodes)){
             if (this.matrix[nodeIniId][nodeFinId]) {
-                this.matrix[nodeIniId][nodeFinId] = false;
-                this.matrix[nodeFinId][nodeIniId] = true;
-                return true;
+                if (!this.matrix[nodeFinId][nodeIniId]) {
+                    this.matrix[nodeIniId][nodeFinId] = false;
+                    this.matrix[nodeFinId][nodeIniId] = true;
+                    return true;
+                } else {
+                    return false;
+                }
             } else {
                 return false;
             }
@@ -752,16 +765,15 @@ public class DiGraphMatrix extends DiGraph {
      * debe quedar sin alteraciones.
      */
     public boolean reverseArcs() {
-        boolean[][] nueva = new boolean[this.numNodes][this.numNodes];
-        for(int i = 0; i < this.numNodes; i++) {
-            for(int j = 0; j < this.numNodes; j++) {
-                if(this.matrix[i][j]) {
-                    this.matrix[i][j] = false;
-		    nueva[j][i] = true;
-		}
+        DiGraphMatrix aux = new DiGraphMatrix(this.numNodes);
+        for (int i = 0; i < this.numNodes; i++) {
+            for (int j = 0; j < this.numNodes; j++) {
+                if (this.isArc(i, j)) {
+                    aux.addArc(j, i);
+                }
             }
-	}
-        this.matrix = nueva;
+        }
+        this.matrix = aux.matrix;
 	return true;
     }
 
@@ -807,44 +819,34 @@ public class DiGraphMatrix extends DiGraph {
      * no sea un archivo o no se pueda escribir en el.
      */
     public void write(String fileName) throws IOException {
-        if ((new File(fileName)).exists() &&
-            (new File(fileName)).isFile() &&
-            (new File(fileName)).canWrite())
-        {
-            PrintStream out;
-            try {
-                out = new PrintStream(fileName);
-                out.println(this.numNodes + " " + this.numArcs);
-                for (int i = 0; i < this.numNodes; i++) {
-                    /* A partir de aqui es diferente entre DiGraphList y
-                     * DiGraphMatrix
-                     */
-                    for (int j = 0; j < this.numNodes; j++) {
-                        if (this.matrix[i][j]) {
-                            out.println(i + " " + j);
-                        }
+        File salida = new File(fileName);
+        if (salida.exists() && salida.isFile()) {
+            salida.delete();
+            salida.createNewFile();
+        }
+        salida.setWritable(true);
+        PrintStream out;
+        try {
+            out = new PrintStream(salida);
+            out.println(this.numNodes + " " + this.numArcs);
+            for (int i = 0; i < this.numNodes; i++) {
+                /* A partir de aqui es diferente entre DiGraphList y
+                 * DiGraphMatrix
+                 */
+                for (int j = 0; j < this.numNodes; j++) {
+                    if (this.matrix[i][j]) {
+                        out.println(i + " " + j);
                     }
-                    // Fin de las diferencias
                 }
-            } catch (FileNotFoundException fnfe) {
-                System.out.println("Esto no deberia pasar, contacte" +
-                        " al programador...");
-                System.out.println("MENSAJE:" + fnfe.getMessage() + "\n" +
-                        "CAUSA:" + fnfe.getCause().toString() + "\n");
-                throw new ExcepcionArchivoNoSePuedeEscribir("\nProblema" +
-                        " escribiendo en el archivo \"" + fileName + "\"");
+                // Fin de las diferencias
             }
-        } else if (!(new File(fileName)).exists()) {
-            throw new ExcepcionArchivoNoExiste("\nProblema al leer el" +
-                    " archivo \"" + fileName +"\":\n\tEL ARCHIVO NO" +
-                    " EXISTE!!!\n");
-        } else if (!(new File(fileName)).isFile()) {
-            throw new ExcepcionNoEsArchivo("\nProblema al leer el archivo" +
-                    " \"" + fileName + "\":\n\tNO ES UN ARCHIVO!!!\n");
-        } else if (!(new File(fileName)).canWrite()) {
-            throw new ExcepcionArchivoNoSePuedeEscribir("\nProblema al leer" +
-                    " el archivo \"" + fileName +"\":\n\tESTE ARCHIVO NO SE" +
-                    " PUEDE ESCRIBIR!!!\n");
+        } catch (FileNotFoundException fnfe) {
+            System.out.println("Esto no deberia pasar, contacte" +
+                    " al programador...");
+            System.out.println("MENSAJE:" + fnfe.getMessage() + "\n" +
+                    "CAUSA:" + fnfe.getCause().toString() + "\n");
+            throw new ExcepcionArchivoNoSePuedeEscribir("\nProblema" +
+                    " escribiendo en el archivo \"" + fileName + "\"");
         }
     }
 
